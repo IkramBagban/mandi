@@ -36,7 +36,7 @@ create table public.people (
   photo_url text,
   phone text check (phone is null or phone ~ '^[6-9][0-9]{9}$'),
   type text not null default 'farmer'
-    check (type in ('farmer', 'trader', 'labour', 'other')),
+    check (type in ('farmer', 'buyer', 'seller', 'transporter', 'trader', 'labour', 'other')),
   village text,
   notes text,
   created_at timestamptz not null default now(),

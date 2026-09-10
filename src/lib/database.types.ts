@@ -5,7 +5,14 @@
  * linked — until then keep these in sync with the migration file by hand.
  */
 
-export type PersonType = 'farmer' | 'trader' | 'labour' | 'other';
+export type PersonType =
+  | 'farmer'
+  | 'buyer'
+  | 'seller'
+  | 'transporter'
+  | 'trader'
+  | 'labour'
+  | 'other';
 export type KhataKind = 'credit' | 'debit' | 'payment';
 export type PayMethod = 'cash' | 'upi' | 'udhaar';
 
