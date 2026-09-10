@@ -294,7 +294,7 @@ tests/
 
 Patterns copied from the sibling Expo apps (`yaadora`, `snap-mind`):
 same action majors (`actions/checkout@v4`, `actions/setup-node@v4` with
-Node 20, `expo/expo-github-action@v8`), same lint → typecheck gate before
+Node 22, `expo/expo-github-action@v8` with `packager: npm`), same lint → typecheck gate before
 any EAS build, same `development` / `preview` (APK, internal) /
 `production` profile shape in `eas.json`. Deliberate differences: mandi is
 plain npm (no bun/pnpm, so `npm ci` + `cache: npm`), CI runs on **every**

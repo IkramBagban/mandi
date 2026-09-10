@@ -20,8 +20,8 @@ jobs:
       - name: Setup Node
         uses: actions/setup-node@v4
         with:
-          # Matches the sibling repos (yaadora, snap-mind) and README (Node 20+).
-          node-version: 20
+          # Node 22 to match the EAS pipeline (eas-cli >= 24 needs node >= 22).
+          node-version: 22
           cache: npm
 
       - name: Install dependencies

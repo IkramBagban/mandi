@@ -52,13 +52,15 @@ jobs:
       - name: Setup Node
         uses: actions/setup-node@v4
         with:
-          node-version: 20
+          # Node 22: eas-cli >= 24 requires node >= 22 (oclif engines).
+          node-version: 22
           cache: npm
 
       - name: Setup Expo and EAS
         uses: expo/expo-github-action@v8
         with:
           eas-version: latest
+          packager: npm
           token: ${{ secrets.EXPO_TOKEN }}
 
       - name: Install dependencies
