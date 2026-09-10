@@ -11,12 +11,7 @@ import { colors, spacing, typography } from '@/theme';
 
 import { computeBalance } from '../repository';
 import { shareKhataOnWhatsApp } from '../share';
-import {
-  groupEntriesByDate,
-  parseDateKey,
-  totalsByKind,
-  type KhataEntry,
-} from '../types';
+import { groupEntriesByDate, parseDateKey, totalsByKind, type KhataEntry } from '../types';
 import { BalanceHeader } from './BalanceHeader';
 import { EntryForm, type EntryFormValue } from './EntryForm';
 import { EntryRow } from './EntryRow';
@@ -193,28 +188,16 @@ export function KhataLedger({
         groups.map((group) => (
           <View key={group.date} style={styles.day}>
             <View style={styles.dayHead}>
-              <Text style={styles.dayDate}>
-                {formatDate(parseDateKey(group.date), language)}
-              </Text>
+              <Text style={styles.dayDate}>{formatDate(parseDateKey(group.date), language)}</Text>
               {group.dayTotal !== 0 ? (
-                <Text
-                  style={[
-                    styles.dayTotal,
-                    group.dayTotal > 0 ? styles.dayIn : styles.dayOut,
-                  ]}
-                >
+                <Text style={[styles.dayTotal, group.dayTotal > 0 ? styles.dayIn : styles.dayOut]}>
                   {group.dayTotal > 0 ? '+' : '−'}
                   {formatINR(Math.abs(group.dayTotal), language)}
                 </Text>
               ) : null}
             </View>
             {group.items.map((entry) => (
-              <EntryRow
-                key={entry.id}
-                entry={entry}
-                onEdit={setEditing}
-                onDelete={confirmDelete}
-              />
+              <EntryRow key={entry.id} entry={entry} onEdit={setEditing} onDelete={confirmDelete} />
             ))}
           </View>
         ))

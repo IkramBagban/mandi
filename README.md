@@ -109,16 +109,46 @@ supabase/
   Indian mobiles validated as 10 digits starting 6–9; money is `numeric`, never
   float.
 
+## People + Khata (built)
+
+- **People tab** (`app/(tabs)/people.tsx`): photo-first list (72dp avatars),
+  search by name/phone/village, add-person form (camera/gallery photo via
+  `expo-image-picker`, name, +91 phone validation, role chips
+  farmer/buyer/seller/transporter/other, village, notes).
+- **Person detail** (`app/person/[id].tsx`): big photo + name, call/WhatsApp
+  buttons, lifetime balance header, full ledger, delete person.
+- **Khata tab** (`app/(tabs)/khata.tsx`): face picker → big green/red balance
+  → add entry (gave/took/settled × AmountInput × cash/UPI/udhaar × day
+  stepper × note) → date-wise history with edit/delete → WhatsApp share of
+  a translated khata summary (`wa.me` deep link).
+- **Data**: repositories (`src/features/people|khata/repository.ts`) are
+  Supabase-first and offline-safe — no config/session/network falls back to
+  an AsyncStorage mirror, and screens show friendly retry states instead of
+  crashing. Person roles were widened to
+  farmer/buyer/seller/transporter (+ legacy trader/labour still readable);
+  if a Supabase project was already provisioned from the old migration,
+  widen its `people.type` check to match `supabase/migrations.sql`.
+- **Verify in Expo Go** (no `.env` needed): `npm install && npx expo start`,
+  scan the QR → People → Add person (take/choose photo, save) → open the
+  person → New entry (try all 3 kinds) → check the balance colour flips →
+  History edit/delete → Share on WhatsApp. Switch language in Settings and
+  re-check every screen (en/hi/mr/ur, zero hardcoded strings).
+- **TODOs for integration**: confirm the `payment` balance sign with real
+  traders before money moves on it; add server sync for rows created offline
+  (local ids are `person_*`/`entry_*`); resolve private-bucket photo URLs
+  with signed URLs once buckets go live; wire the auth OTP flow so RLS
+  `owner_id` rows sync to Supabase.
+
 ## Stubs for the next workers
 
 | Area     | Stub location                                            | Build next                                                 |
 | -------- | -------------------------------------------------------- | ---------------------------------------------------------- |
-| People   | `app/(tabs)/people.tsx`, `features/people`               | Search + photo grid + add-person sheet                     |
-| Khata    | `app/(tabs)/khata.tsx`, `features/khata`                 | Person picker → balance → entry form                       |
+| People   | `app/(tabs)/people.tsx`, `features/people`               | ✅ Done (this branch) — photo list + search + add-person   |
+| Khata    | `app/(tabs)/khata.tsx`, `features/khata`                 | ✅ Done (this branch) — picker → balance → entries → share |
 | Sales    | `app/(tabs)/records.tsx`, `features/records`             | Wizard: commodity → weight → rate → expenses → photo → net |
 | Auth OTP | `features/auth`, `lib/sms.ts`, `functions/send-sms-hook` | Login screens (phone → code), deploy hook, MSG91 secrets   |
-| WhatsApp | — (no code yet)                                          | Share via `expo-sharing` / deep link                       |
-| Photos   | `lib/upload.ts` (`uploadPhoto` TODO)                     | Wire `expo-image-picker` + session-scoped paths            |
+| WhatsApp | `features/khata/share.ts` (+ `KhataLedger` share button) | ✅ Khata summary share done — more share surfaces later    |
+| Photos   | `lib/upload.ts` + `features/people/photo.ts`             | ✅ Person photos wired — signed URLs + record photos later |
 
 ## Commit conventions
 

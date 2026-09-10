@@ -8,13 +8,7 @@ export type { PersonType };
  * `trader`/`labour` stay valid for rows written before this feature
  * (see `supabase/migrations.sql`) but the form only offers the five below.
  */
-export const PERSON_TYPES = [
-  'farmer',
-  'buyer',
-  'seller',
-  'transporter',
-  'other',
-] as const;
+export const PERSON_TYPES = ['farmer', 'buyer', 'seller', 'transporter', 'other'] as const;
 
 export type PersonFormType = (typeof PERSON_TYPES)[number];
 

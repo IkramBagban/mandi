@@ -6,13 +6,7 @@
  */
 
 export type PersonType =
-  | 'farmer'
-  | 'buyer'
-  | 'seller'
-  | 'transporter'
-  | 'trader'
-  | 'labour'
-  | 'other';
+  'farmer' | 'buyer' | 'seller' | 'transporter' | 'trader' | 'labour' | 'other';
 export type KhataKind = 'credit' | 'debit' | 'payment';
 export type PayMethod = 'cash' | 'upi' | 'udhaar';
 

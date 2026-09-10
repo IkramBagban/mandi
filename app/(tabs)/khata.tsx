@@ -8,12 +8,7 @@ import { BigButton, EmptyState, Screen } from '@/components';
 import { KhataLedger, type LedgerErrorKey } from '@/features/khata/components/KhataLedger';
 import type { EntryFormValue } from '@/features/khata/components/EntryForm';
 import { PersonPicker } from '@/features/khata/components/PersonPicker';
-import {
-  addEntry,
-  deleteEntry,
-  listEntries,
-  updateEntry,
-} from '@/features/khata/repository';
+import { addEntry, deleteEntry, listEntries, updateEntry } from '@/features/khata/repository';
 import type { KhataEntry } from '@/features/khata/types';
 import { listPeople } from '@/features/people/repository';
 import type { Person } from '@/features/people/types';
@@ -139,11 +134,7 @@ export default function KhataScreen() {
             <MaterialIcons name="signal-wifi-off" size={48} color={colors.primary} />
           </View>
           <Text style={styles.errorTitle}>{t(peopleError)}</Text>
-          <BigButton
-            label={t('common.retry')}
-            icon="refresh"
-            onPress={() => void loadPeople()}
-          />
+          <BigButton label={t('common.retry')} icon="refresh" onPress={() => void loadPeople()} />
         </View>
       ) : people.length === 0 ? (
         <EmptyState

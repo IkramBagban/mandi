@@ -1,9 +1,4 @@
-import {
-  newLocalId,
-  readLocalList,
-  toRepoError,
-  writeLocalList,
-} from '@/lib/offline';
+import { newLocalId, readLocalList, toRepoError, writeLocalList } from '@/lib/offline';
 import { getSupabase, isSupabaseConfigured } from '@/lib/supabase';
 
 import type { Person, PersonDraft } from './types';

@@ -46,8 +46,7 @@ export function PersonForm({ onSubmit, onCancel, submitting }: PersonFormProps) 
     setPhotoBusy(true);
     setPhotoError(null);
     try {
-      const result =
-        kind === 'camera' ? await takePersonPhoto() : await pickPersonPhoto();
+      const result = kind === 'camera' ? await takePersonPhoto() : await pickPersonPhoto();
       if (result.ok) {
         setPhotoUri(result.uri);
       } else if (result.reason === 'denied') {

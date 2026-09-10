@@ -1,9 +1,4 @@
-import {
-  newLocalId,
-  readLocalList,
-  toRepoError,
-  writeLocalList,
-} from '@/lib/offline';
+import { newLocalId, readLocalList, toRepoError, writeLocalList } from '@/lib/offline';
 import { getSupabase, isSupabaseConfigured } from '@/lib/supabase';
 
 import type { KhataEntry, KhataEntryDraft, KhataEntryUpdate } from './types';
@@ -60,9 +55,7 @@ function cleanUpdate(update: KhataEntryUpdate) {
     ...(update.kind !== undefined ? { kind: update.kind } : {}),
     ...(update.amount !== undefined ? { amount: update.amount } : {}),
     ...(update.method !== undefined ? { method: update.method } : {}),
-    ...(update.note !== undefined
-      ? { note: update.note?.trim() ? update.note.trim() : null }
-      : {}),
+    ...(update.note !== undefined ? { note: update.note?.trim() ? update.note.trim() : null } : {}),
   };
 }
 

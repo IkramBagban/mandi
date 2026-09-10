@@ -45,7 +45,10 @@ const KIND_META: Record<KhataKind, { key: KindKey; icon: keyof typeof MaterialIc
   payment: { key: 'kindPayment', icon: 'check-circle' },
 };
 
-const METHOD_META: Record<PayMethod, { key: MethodKey; icon: keyof typeof MaterialIcons.glyphMap }> = {
+const METHOD_META: Record<
+  PayMethod,
+  { key: MethodKey; icon: keyof typeof MaterialIcons.glyphMap }
+> = {
   cash: { key: 'methodCash', icon: 'payments' },
   upi: { key: 'methodUpi', icon: 'smartphone' },
   udhaar: { key: 'methodUdhaar', icon: 'book' },
@@ -59,9 +62,7 @@ export function EntryForm({ mode, initial, submitting, onSubmit, onCancel }: Ent
   const { t } = useTranslation();
   const language = useSettingsStore((s) => s.language);
   const [kind, setKind] = useState<KhataKind>(initial?.kind ?? 'credit');
-  const [amountText, setAmountText] = useState(
-    initial ? String(initial.amount) : '',
-  );
+  const [amountText, setAmountText] = useState(initial ? String(initial.amount) : '');
   const [amountError, setAmountError] = useState<string | null>(null);
   const [method, setMethod] = useState<PayMethod>(initial?.method ?? 'cash');
   const [date, setDate] = useState(initial?.date ?? todayKey());

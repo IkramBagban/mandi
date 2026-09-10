@@ -27,7 +27,9 @@ export function BalanceHeader({ balance, testID }: BalanceHeaderProps) {
       </Text>
       <View style={styles.stateRow}>
         <MaterialIcons
-          name={state === 'clear' ? 'check-circle' : state === 'in' ? 'arrow-downward' : 'arrow-upward'}
+          name={
+            state === 'clear' ? 'check-circle' : state === 'in' ? 'arrow-downward' : 'arrow-upward'
+          }
           size={28}
           color={state === 'in' ? colors.credit : state === 'out' ? colors.debit : colors.textMuted}
         />

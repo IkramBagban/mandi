@@ -130,9 +130,7 @@ export default function PeopleScreen() {
               renderItem={({ item }) => (
                 <PersonCard
                   person={item}
-                  onPress={() =>
-                    router.push({ pathname: '/person/[id]', params: { id: item.id } })
-                  }
+                  onPress={() => router.push({ pathname: '/person/[id]', params: { id: item.id } })}
                 />
               )}
             />

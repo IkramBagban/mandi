@@ -13,8 +13,7 @@ import { newLocalId } from '@/lib/offline';
  */
 
 export type PhotoOutcome =
-  | { ok: true; uri: string }
-  | { ok: false; reason: 'cancelled' | 'denied' | 'error' };
+  { ok: true; uri: string } | { ok: false; reason: 'cancelled' | 'denied' | 'error' };
 
 const PICKER_OPTIONS: ImagePicker.ImagePickerOptions = {
   mediaTypes: ['images'],
@@ -23,9 +22,7 @@ const PICKER_OPTIONS: ImagePicker.ImagePickerOptions = {
   quality: 0.8,
 };
 
-async function toOutcome(
-  result: ImagePicker.ImagePickerResult,
-): Promise<PhotoOutcome> {
+async function toOutcome(result: ImagePicker.ImagePickerResult): Promise<PhotoOutcome> {
   if (result.canceled) return { ok: false, reason: 'cancelled' };
   const uri = result.assets?.[0]?.uri;
   if (!uri) return { ok: false, reason: 'error' };
