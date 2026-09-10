@@ -68,9 +68,15 @@ export function mapAuthErrorToKey(error: unknown): string {
   if (
     text.includes('invalid login credentials') ||
     text.includes('invalid grant') ||
-    text.includes('email or phone not confirmed')
+    text.includes('phone not confirmed')
   ) {
     return 'auth.errorCredentialsInvalid';
+  }
+  // Email confirmations got turned ON in the dashboard while the app signs
+  // up confirmation-free: the account exists but can never log in. This is
+  // an operator misconfiguration, not a user typo — say so.
+  if (text.includes('email not confirmed')) {
+    return 'auth.errorSignupUnavailable';
   }
   // Direct (no-OTP) signup hit an existing account — point at Login.
   if (text.includes('already registered') || text.includes('already been registered')) {

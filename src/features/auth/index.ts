@@ -5,9 +5,16 @@ export type { PasswordResult } from './password';
 export { PasswordInput } from './PasswordInput';
 export { PhoneEntry } from './PhoneEntry';
 export { MAX_PHONE_CHARS, PhoneField } from './PhoneField';
-export { formatIndianPhoneDisplay, toE164Indian } from './phone';
+export {
+  SYNTHETIC_EMAIL_DOMAIN,
+  formatIndianPhoneDisplay,
+  phoneFromSyntheticEmail,
+  syntheticEmailFor,
+  toE164Indian,
+} from './phone';
 export {
   getSessionUser,
+  linkPhoneNumber,
   requestOtp,
   setPassword,
   signInWithPassword,

@@ -3,6 +3,7 @@ import type { SupabaseClient } from '@supabase/supabase-js';
 import type { Database } from '@/lib/database.types';
 import { getSupabase, isSupabaseConfigured } from '@/lib/supabase';
 import {
+  linkPhoneNumber as repoLinkPhoneNumber,
   setPassword as repoSetPassword,
   signInWithPassword as repoSignInWithPassword,
   signUpWithPassword as repoSignUpWithPassword,
@@ -18,7 +19,13 @@ const mockIsConfigured = jest.mocked(isSupabaseConfigured);
 const mockGetSupabase = jest.mocked(getSupabase);
 
 const OWNER_ID = 'owner_1';
-const USER = { id: OWNER_ID, phone: '+919812345678' };
+/** Email-provider session user: synthetic email + real phone in metadata. */
+const USER = {
+  id: OWNER_ID,
+  email: '9812345678@mandi.invalid',
+  phone: '',
+  user_metadata: { phone: '9812345678' },
+};
 
 function stubAuth(auth: Record<string, jest.Mock>): void {
   mockIsConfigured.mockReturnValue(true);
@@ -32,14 +39,41 @@ beforeEach(() => {
 });
 
 describe('signInWithPassword', () => {
-  it('signs in with the E.164 phone and raw password', async () => {
+  it('signs in with the synthetic email and raw password, exposing phone', async () => {
     const signIn = jest.fn().mockResolvedValue({ data: { user: USER }, error: null });
     stubAuth({ signInWithPassword: signIn });
 
     await expect(
       repoSignInWithPassword({ phone: '9812345678', password: 'mandi12' }),
-    ).resolves.toEqual({ id: OWNER_ID, phone: '+919812345678' });
-    expect(signIn).toHaveBeenCalledWith({ phone: '+919812345678', password: 'mandi12' });
+    ).resolves.toEqual({ id: OWNER_ID, phone: '9812345678' });
+    expect(signIn).toHaveBeenCalledWith({
+      email: '9812345678@mandi.invalid',
+      password: 'mandi12',
+    });
+  });
+
+  it('reverse-maps the phone from the synthetic email when metadata is missing', async () => {
+    const signIn = jest.fn().mockResolvedValue({
+      data: { user: { id: OWNER_ID, email: '7012345678@mandi.invalid', user_metadata: {} } },
+      error: null,
+    });
+    stubAuth({ signInWithPassword: signIn });
+
+    await expect(
+      repoSignInWithPassword({ phone: '7012345678', password: 'mandi12' }),
+    ).resolves.toEqual({ id: OWNER_ID, phone: '7012345678' });
+  });
+
+  it('never exposes the synthetic email as the phone', async () => {
+    const signIn = jest.fn().mockResolvedValue({
+      data: { user: { id: OWNER_ID, email: 'real@example.com', user_metadata: {} } },
+      error: null,
+    });
+    stubAuth({ signInWithPassword: signIn });
+
+    const user = await repoSignInWithPassword({ phone: '9812345678', password: 'mandi12' });
+    expect(user.phone).not.toContain('@');
+    expect(user.phone).not.toContain('mandi.invalid');
   });
 
   it('rejects short passwords client-side without touching Supabase', async () => {
@@ -75,7 +109,7 @@ describe('signInWithPassword', () => {
 });
 
 describe('signUpWithPassword', () => {
-  it('signs up with the E.164 phone and returns the session user', async () => {
+  it('signs up with the synthetic email, storing the real phone in metadata', async () => {
     const signUp = jest
       .fn()
       .mockResolvedValue({ data: { user: USER, session: { access_token: 'tok' } }, error: null });
@@ -83,8 +117,12 @@ describe('signUpWithPassword', () => {
 
     await expect(
       repoSignUpWithPassword({ phone: '9812345678', password: 'mandi12' }),
-    ).resolves.toEqual({ id: OWNER_ID, phone: '+919812345678' });
-    expect(signUp).toHaveBeenCalledWith({ phone: '+919812345678', password: 'mandi12' });
+    ).resolves.toEqual({ id: OWNER_ID, phone: '9812345678' });
+    expect(signUp).toHaveBeenCalledWith({
+      email: '9812345678@mandi.invalid',
+      password: 'mandi12',
+      options: { data: { phone: '9812345678' } },
+    });
   });
 
   it('throws the signup-unavailable key when confirmations are ON (no session issued)', async () => {
@@ -121,6 +159,16 @@ describe('signUpWithPassword', () => {
   });
 });
 
+describe('linkPhoneNumber (future stub)', () => {
+  it('throws a not-built error instead of touching Supabase', async () => {
+    const updateUser = jest.fn();
+    stubAuth({ updateUser });
+
+    await expect(repoLinkPhoneNumber()).rejects.toThrow('not built yet');
+    expect(updateUser).not.toHaveBeenCalled();
+  });
+});
+
 describe('setPassword', () => {
   it('updates the password on the OTP-verify session', async () => {
     const updateUser = jest.fn().mockResolvedValue({ data: { user: USER }, error: null });
@@ -128,7 +176,7 @@ describe('setPassword', () => {
 
     await expect(repoSetPassword({ password: 'newpass1' })).resolves.toEqual({
       id: OWNER_ID,
-      phone: '+919812345678',
+      phone: '9812345678',
     });
     expect(updateUser).toHaveBeenCalledWith({ password: 'newpass1' });
   });

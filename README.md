@@ -34,35 +34,46 @@ cp .env.example .env
 
 `.env` is gitignored. Never commit secrets; `.env.example` holds placeholders.
 
-## Phone OTP auth
+## Phone + password auth (synthetic email)
 
-Login is phone-OTP only: `app/(auth)/` (phone → 6-digit code) gated by the
-root layout — logged-out users see the auth stack only. The session
-persists in AsyncStorage, so users stay logged in across restarts; logout
-lives in Settings → Account. Delivery is WhatsApp-first with MSG91 SMS
-fallback, routed server-side through the Send SMS Hook
-(`supabase/functions/send-sms-hook/`, which imports the shared adapter in
-`src/lib/sms.ts`). MSG91 secrets live in Edge Function secrets — never in
-the app bundle, never in `EXPO_PUBLIC_*` vars.
+Login is phone + password: `app/(auth)/` (password tab by default, OTP tab
+only when the flag is on) gated by the root layout — logged-out users see
+the auth stack only. The session persists in AsyncStorage, so users stay
+logged in across restarts; logout lives in Settings → Account.
 
-### Test OTPs for dev (no real numbers in the repo)
+**How phone login works without a Phone provider.** The Phone provider
+stays DISABLED and there is no Twilio anywhere. Only the **Email**
+provider is enabled, and the repository maps each 10-digit phone to a
+deterministic hidden email — `<10-digits>@mandi.invalid` (RFC 2606
+`.invalid`: never deliverable, format-valid; see `syntheticEmailFor` in
+`src/features/auth/phone.ts`). `signUp`/`signInWithPassword` run against
+that address; the real phone is stored in `user_metadata.phone` at signup
+and read back by the repository. Users ONLY ever see phone + password —
+the synthetic address never appears in UI or logs. RLS is untouched
+(`owner_id = auth.uid()` works identically for both methods). The mapping
+is STABLE: changing the domain orphans every existing account.
 
-Use your own device/SIM number with a fixed code — never commit a real
-number. On self-hosted / `supabase start` local dev, map test numbers to
-fixed codes so no SMS is sent and only the mapped code verifies:
+**Dashboard requirements (current): ONLY Email provider enabled, with
+email confirmations OFF.** Phone provider stays disabled. If email
+confirmations get turned on by mistake, signup stops issuing sessions and
+users see `auth.errorSignupUnavailable` / `auth.errorAlreadyRegistered`
+instead of a hang — the operator fix is flipping confirmations back OFF,
+never an app change.
 
-```sh
-SMS_TEST_OTP=<your-own-10-digit-number>:123456
-# wired to GOTRUE_SMS_TEST_OTP in docker-compose.yml
-```
+**OTP flag (default OFF, for later).** `EXPO_PUBLIC_OTP_ENABLED=true`
+restores the OTP tab plus signup/recovery OTP-verify (code in
+`src/lib/authFlags.ts`; flip needs a rebuild). Enabling it ALSO requires:
+Phone provider ON, phone confirmations ON, and the MSG91 hook live below.
+When that day comes, real numbers get linked onto the synthetic-email
+accounts via `linkPhoneNumber` (`src/features/auth/repository.ts` — stub
 
-Flow: enter your number → Supabase skips delivery → type the mapped code →
-logged in. For hosted projects, use a personal test SIM on the staging
-project and remove test numbers before production. See
-`docs/truecaller-eval.md` for why Truecaller 1-tap was evaluated and
+- design note only, not built): `updateUser({ phone })` on the session,
+  then `verifyOtp({ type: 'phone_change' })`.
+
+See `docs/truecaller-eval.md` for why Truecaller 1-tap was evaluated and
 rejected (paid, no Expo path, doesn't plug into Supabase Auth).
 
-### Going live: MSG91 + hook checklist
+### Going live: MSG91 + hook checklist (only needed when the OTP flag turns on)
 
 1. **MSG91 account** (control.msg91.com) with an Indian route.
 2. **DLT registration** (India regulatory, required for SMS): register your
@@ -82,12 +93,16 @@ rejected (paid, no Expo path, doesn't plug into Supabase Auth).
    ```
 5. **Deploy + enable**: `supabase functions deploy send-sms-hook`, then
    Dashboard → Authentication → Hooks → enable the Send SMS Hook (V2).
-6. **Supabase Auth settings**: enable Phone provider, set OTP expiry
-   (~5 min) and SMS frequency limits; the app adds its own 30s resend
-   cooldown and stops guessing after 5 wrong codes (resend resets it).
+6. **Supabase Auth settings for OTP mode**: enable the Phone provider, turn
+   phone confirmations ON, set OTP expiry (~5 min) and SMS frequency
+   limits; the app adds its own 30s resend cooldown and stops guessing
+   after 5 wrong codes (resend resets it). Test numbers: Dashboard →
+   Authentication → Phone settings can map a number to a fixed code — use
+   your own device/SIM number, never commit a real number.
 
-Security notes: the OTP is never logged on client or server; hook errors
-are sanitized; Supabase enforces its own per-number rate limits on top.
+Security notes: passwords and OTPs are never logged on client or server;
+hook errors are sanitized; Supabase enforces its own per-number rate
+limits on top.
 
 ## Scripts
 
@@ -181,27 +196,22 @@ tests/
 - **Supabase: schema file + typed client + stubs.** No live project required.
   RLS-first: every table forces `owner_id = auth.uid()`; the app uses the anon
   key only. Regenerate `database.types.ts` via `supabase gen types` once linked.
-- **Auth: phone+password primary, OTP behind a flag (default OFF).** Login
-  is password-only unless `EXPO_PUBLIC_OTP_ENABLED=true` (central switch in
-  `src/lib/authFlags.ts` — unset/anything-else means OFF and no OTP code
-  path can execute, so zero SMS is ever spent). Flag OFF: signup is phone +
-  set-password directly via `signUpWithPassword`; forgot-password shows an
-  explanatory message instead of a dead button. Flag ON: the full OTP flows
-  (Login OTP tab, signup/recovery OTP verify → set password via `updateUser`
-  on the OTP session, see `src/features/auth/`). Password rule is minimal:
-  6+ characters, numeric PIN allowed. Delivery is server-side through a
-  Supabase **Send SMS Hook** (`supabase/functions/send-sms-hook/`) that
-  tries WhatsApp first and falls back to **MSG91 SMS** (`src/lib/sms`
-  provider contract). MSG91 keys live in Edge Function secrets — never in
-  the app.
-  - Flip the flag: set `EXPO_PUBLIC_OTP_ENABLED=true` in `.env`, then
-    restart `npx expo start` (dev) or rebuild (production — `EXPO_PUBLIC_*`
-    vars bake in at build time).
-  - REQUIRED dashboard match: Supabase Dashboard → Authentication →
-    Providers → Phone → **Confirm phone must be OFF while the flag is off**
-    (else direct signup cannot issue a session and users see
-    `auth.errorSignupUnavailable`). Turn confirmations ON only together with
-    the flag AND the MSG91 hook live.
+- **Auth: phone+password via synthetic email, OTP behind a flag (default OFF).**
+  Phone provider stays DISABLED, no Twilio — only the Email provider is
+  enabled, and each phone maps to `<10-digits>@mandi.invalid`
+  (`syntheticEmailFor`, real phone in `user_metadata.phone`; users only ever
+  see phone + password). Login is password-only unless
+  `EXPO_PUBLIC_OTP_ENABLED=true` (central switch in `src/lib/authFlags.ts`).
+  Flag OFF: signup is phone + set-password directly via `signUpWithPassword`;
+  forgot-password shows an explanatory message instead of a dead button.
+  Flag ON: the full OTP flows (see `src/features/auth/`). Password rule is
+  minimal: 6+ characters, numeric PIN allowed.
+  - REQUIRED dashboard state: ONLY Email provider enabled, email
+    confirmations OFF (else signup cannot issue a session and users see
+    `auth.errorSignupUnavailable`).
+  - OTP era later needs: flag ON + Phone provider ON + phone confirmations
+    ON + MSG91 hook live; real numbers then link via `linkPhoneNumber`
+    (stubbed, not built).
   - Future upgrade path: move the flag to a remote `app_config` table (one
     row, `otp_enabled` boolean, public-read RLS) read at boot when we want
     no-rebuild flips — the call sites already go through `isOtpEnabled()`,
@@ -245,14 +255,14 @@ tests/
 
 ## Stubs for the next workers
 
-| Area     | Stub location                                            | Build next                                                                                                                                            |
-| -------- | -------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------- |
-| People   | `app/(tabs)/people.tsx`, `features/people`               | ✅ Done (this branch) — photo list + search + add-person                                                                                              |
-| Khata    | `app/(tabs)/khata.tsx`, `features/khata`                 | ✅ Done (this branch) — picker → balance → entries → share                                                                                            |
-| Sales    | `app/(tabs)/records.tsx`, `features/records`             | Wizard: commodity → weight → rate → expenses → photo → net                                                                                            |
-| Auth OTP | `features/auth`, `lib/sms.ts`, `functions/send-sms-hook` | ✅ Built: password-primary login tabs, signup + forgot via one OTP, session gate, providers + hook. Remaining: deploy hook, set secrets, test numbers |
-| WhatsApp | `features/khata/share.ts` (+ `KhataLedger` share button) | ✅ Khata summary share done — more share surfaces later                                                                                               |
-| Photos   | `lib/upload.ts` + `features/people/photo.ts`             | ✅ Person photos wired — signed URLs + record photos later                                                                                            |
+| Area     | Stub location                                            | Build next                                                                                                                                                              |
+| -------- | -------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| People   | `app/(tabs)/people.tsx`, `features/people`               | ✅ Done (this branch) — photo list + search + add-person                                                                                                                |
+| Khata    | `app/(tabs)/khata.tsx`, `features/khata`                 | ✅ Done (this branch) — picker → balance → entries → share                                                                                                              |
+| Sales    | `app/(tabs)/records.tsx`, `features/records`             | Wizard: commodity → weight → rate → expenses → photo → net                                                                                                              |
+| Auth OTP | `features/auth`, `lib/sms.ts`, `functions/send-sms-hook` | ✅ Built: synthetic-email phone+password (Email provider only), OTP flag default off, session gate. Later: OTP era needs flag + Phone provider + hook + linkPhoneNumber |
+| WhatsApp | `features/khata/share.ts` (+ `KhataLedger` share button) | ✅ Khata summary share done — more share surfaces later                                                                                                                 |
+| Photos   | `lib/upload.ts` + `features/people/photo.ts`             | ✅ Person photos wired — signed URLs + record photos later                                                                                                              |
 
 ## Sale records + Udhaari dashboard
 

@@ -41,6 +41,10 @@ describe('mapAuthErrorToKey — password paths', () => {
   it('maps a missing OTP-verify session to loginRequired', () => {
     expect(mapAuthErrorToKey(new Error('Auth session missing!'))).toBe('auth.loginRequired');
   });
+
+  it('maps unconfirmed email to signup-unavailable (dashboard mismatch, not a typo)', () => {
+    expect(mapAuthErrorToKey(new Error('Email not confirmed'))).toBe('auth.errorSignupUnavailable');
+  });
 });
 
 describe('mapAuthErrorToKey — OTP regression', () => {
