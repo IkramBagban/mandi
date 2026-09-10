@@ -33,3 +33,12 @@ export function gradesFor(commodityId: string): string[] {
 export function defaultGradeFor(commodityId: string): string {
   return gradesFor(commodityId)[0] ?? '';
 }
+
+/**
+ * Localized commodity name. The cast keeps one call-site instead of a switch
+ * per screen: every `commodities.*` key exists in all locale files (CI check:
+ * the i18n parity script in the PR notes).
+ */
+export function commodityLabel(t: (key: 'commodities.mosambi') => string, id: string): string {
+  return t(`commodities.${id}` as 'commodities.mosambi');
+}
