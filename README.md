@@ -96,6 +96,12 @@ supabase/
 - **Supabase: schema file + typed client + stubs.** No live project required.
   RLS-first: every table forces `owner_id = auth.uid()`; the app uses the anon
   key only. Regenerate `database.types.ts` via `supabase gen types` once linked.
+- **Auth: phone OTP only, WhatsApp-first.** Login uses `signInWithOtp({ phone })`
+  with channel order WhatsApp → SMS (see `src/features/auth/`). Delivery is
+  server-side through a Supabase **Send SMS Hook**
+  (`supabase/functions/send-sms-hook/`) that tries WhatsApp first and falls
+  back to **MSG91 SMS** (`src/lib/sms.ts` provider contract). MSG91 keys live
+  in Edge Function secrets — never in the app.
 - **Photos: compress on-device first** (`expo-image-manipulator` current
   contextual API — `manipulate().resize().renderAsync()`), max 1024px / JPEG
   0.7. Recognizable is enough; keeps mandi-network uploads fast.
@@ -105,14 +111,14 @@ supabase/
 
 ## Stubs for the next workers
 
-| Area     | Stub location                                | Build next                                                 |
-| -------- | -------------------------------------------- | ---------------------------------------------------------- |
-| People   | `app/(tabs)/people.tsx`, `features/people`   | Search + photo grid + add-person sheet                     |
-| Khata    | `app/(tabs)/khata.tsx`, `features/khata`     | Person picker → balance → entry form                       |
-| Sales    | `app/(tabs)/records.tsx`, `features/records` | Wizard: commodity → weight → rate → expenses → photo → net |
-| Auth OTP | — (no code yet)                              | Supabase phone auth, attach `owner_id` from session        |
-| WhatsApp | — (no code yet)                              | Share via `expo-sharing` / deep link                       |
-| Photos   | `lib/upload.ts` (`uploadPhoto` TODO)         | Wire `expo-image-picker` + session-scoped paths            |
+| Area     | Stub location                                            | Build next                                                 |
+| -------- | -------------------------------------------------------- | ---------------------------------------------------------- |
+| People   | `app/(tabs)/people.tsx`, `features/people`               | Search + photo grid + add-person sheet                     |
+| Khata    | `app/(tabs)/khata.tsx`, `features/khata`                 | Person picker → balance → entry form                       |
+| Sales    | `app/(tabs)/records.tsx`, `features/records`             | Wizard: commodity → weight → rate → expenses → photo → net |
+| Auth OTP | `features/auth`, `lib/sms.ts`, `functions/send-sms-hook` | Login screens (phone → code), deploy hook, MSG91 secrets   |
+| WhatsApp | — (no code yet)                                          | Share via `expo-sharing` / deep link                       |
+| Photos   | `lib/upload.ts` (`uploadPhoto` TODO)                     | Wire `expo-image-picker` + session-scoped paths            |
 
 ## Commit conventions
 

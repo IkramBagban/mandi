@@ -64,6 +64,19 @@
     "mr": "मराठी",
     "ur": "اردو"
   },
+  "auth": {
+    "title": "Login",
+    "subtitle": "Only your mobile number. No password.",
+    "phoneLabel": "Mobile number",
+    "phonePlaceholder": "10-digit mobile",
+    "sendCode": "Send code",
+    "codeLabel": "6-digit code",
+    "verify": "Verify",
+    "resend": "Resend code",
+    "sentViaWhatsapp": "Code sent on WhatsApp",
+    "sentViaSms": "Code sent by SMS",
+    "channelNote": "We try WhatsApp first, then SMS."
+  },
   "validation": {
     "amountRequired": "Please enter an amount.",
     "amountInvalid": "Amount looks wrong. Use only numbers.",

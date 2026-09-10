@@ -64,6 +64,19 @@
     "mr": "मराठी",
     "ur": "اردو"
   },
+  "auth": {
+    "title": "लॉगिन",
+    "subtitle": "फक्त तुमचा मोबाईल नंबर. पासवर्ड नाही.",
+    "phoneLabel": "मोबाईल नंबर",
+    "phonePlaceholder": "10 अंकी मोबाईल",
+    "sendCode": "कोड पाठवा",
+    "codeLabel": "6 अंकी कोड",
+    "verify": "तपासा",
+    "resend": "कोड पुन्हा पाठवा",
+    "sentViaWhatsapp": "कोड WhatsApp वर पाठवला",
+    "sentViaSms": "कोड SMS ने पाठवला",
+    "channelNote": "आधी WhatsApp, मग SMS वर प्रयत्न करतो."
+  },
   "validation": {
     "amountRequired": "कृपया रक्कम लिहा.",
     "amountInvalid": "रक्कम चुकीची वाटते. फक्त अंक लिहा.",

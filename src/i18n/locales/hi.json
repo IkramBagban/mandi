@@ -64,6 +64,19 @@
     "mr": "मराठी",
     "ur": "اردو"
   },
+  "auth": {
+    "title": "लॉगिन",
+    "subtitle": "सिर्फ आपका मोबाइल नंबर। कोई पासवर्ड नहीं।",
+    "phoneLabel": "मोबाइल नंबर",
+    "phonePlaceholder": "10 अंक का मोबाइल",
+    "sendCode": "कोड भेजें",
+    "codeLabel": "6 अंक का कोड",
+    "verify": "जाँचें",
+    "resend": "कोड फिर भेजें",
+    "sentViaWhatsapp": "कोड WhatsApp पर भेजा",
+    "sentViaSms": "कोड SMS से भेजा",
+    "channelNote": "पहले WhatsApp, फिर SMS से कोशिश करते हैं।"
+  },
   "validation": {
     "amountRequired": "कृपया रकम लिखें।",
     "amountInvalid": "रकम गलत लग रही है। सिर्फ अंक लिखें।",
