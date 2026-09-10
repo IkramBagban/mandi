@@ -65,6 +65,12 @@ export function totalsByKind(entries: KhataEntry[]): Record<KhataKind, number> {
   return totals;
 }
 
+/** Parse a `YYYY-MM-DD` key as a *local* noon date (no TZ day-shift). */
+export function parseDateKey(key: string): Date {
+  const [y, m, d] = key.split('-').map(Number);
+  return new Date(y || 1970, (m || 1) - 1, d || 1, 12, 0, 0);
+}
+
 /** Local `YYYY-MM-DD` for today (no time-zone surprise from `toISOString`). */
 export function todayKey(): string {
   const now = new Date();
