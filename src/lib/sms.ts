@@ -37,8 +37,9 @@ function readEnv(name: string): string | undefined {
   } catch {
     // Deno without --allow-env: fall through to process.env.
   }
-  return (globalThis as { process?: { env?: Record<string, string | undefined> } }).process
-    ?.env?.[name];
+  return (globalThis as { process?: { env?: Record<string, string | undefined> } }).process?.env?.[
+    name
+  ];
 }
 
 /** POST JSON with a 10s timeout. Rejects with a message that never echoes the OTP. */
@@ -120,10 +121,7 @@ export class Msg91SmsProvider implements MessageProvider {
       this.config.smsFlowId ?? readEnv('MSG91_SMS_FLOW_ID'),
       'MSG91_SMS_FLOW_ID',
     );
-    const sender = required(
-      this.config.senderId ?? readEnv('MSG91_SENDER_ID'),
-      'MSG91_SENDER_ID',
-    );
+    const sender = required(this.config.senderId ?? readEnv('MSG91_SENDER_ID'), 'MSG91_SENDER_ID');
     const otpVar = this.config.otpVar ?? readEnv('MSG91_SMS_OTP_VAR') ?? 'OTP';
     await postJson('https://control.msg91.com/api/v5/flow', authKey, {
       flow_id: flowId,
@@ -196,10 +194,12 @@ export class WhatsAppOtpProvider implements MessageProvider {
 }
 
 /** Channel order used by the Send SMS Hook: WhatsApp, then MSG91 SMS. */
-export function createOtpProviders(config: {
-  sms?: Msg91SmsConfig;
-  whatsapp?: WhatsAppConfig;
-} = {}): MessageProvider[] {
+export function createOtpProviders(
+  config: {
+    sms?: Msg91SmsConfig;
+    whatsapp?: WhatsAppConfig;
+  } = {},
+): MessageProvider[] {
   return [new WhatsAppOtpProvider(config.whatsapp), new Msg91SmsProvider(config.sms)];
 }
 

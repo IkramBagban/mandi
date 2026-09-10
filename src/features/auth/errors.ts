@@ -29,7 +29,10 @@ function readError(error: unknown): ReadableAuthError {
 export function isNetworkError(error: unknown): boolean {
   if (error instanceof TypeError) return true;
   const { message } = readError(error);
-  return message !== undefined && /network request failed|fetch|failed to fetch|load failed|timeout|abort/i.test(message);
+  return (
+    message !== undefined &&
+    /network request failed|fetch|failed to fetch|load failed|timeout|abort/i.test(message)
+  );
 }
 
 /**

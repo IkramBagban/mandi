@@ -23,8 +23,7 @@ export default function PhoneScreen() {
   const [sendError, setSendError] = useState<string | null>(null);
 
   const phone = validateIndianPhone(raw);
-  const fieldError =
-    touched && !phone.ok ? t(phone.errorKey) : sendError ? t(sendError) : null;
+  const fieldError = touched && !phone.ok ? t(phone.errorKey) : sendError ? t(sendError) : null;
 
   const send = async () => {
     setTouched(true);

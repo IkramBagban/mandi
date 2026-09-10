@@ -34,6 +34,61 @@ cp .env.example .env
 
 `.env` is gitignored. Never commit secrets; `.env.example` holds placeholders.
 
+## Phone OTP auth
+
+Login is phone-OTP only: `app/(auth)/` (phone → 6-digit code) gated by the
+root layout — logged-out users see the auth stack only. The session
+persists in AsyncStorage, so users stay logged in across restarts; logout
+lives in Settings → Account. Delivery is WhatsApp-first with MSG91 SMS
+fallback, routed server-side through the Send SMS Hook
+(`supabase/functions/send-sms-hook/`, which imports the shared adapter in
+`src/lib/sms.ts`). MSG91 secrets live in Edge Function secrets — never in
+the app bundle, never in `EXPO_PUBLIC_*` vars.
+
+### Test OTPs for dev (no real numbers in the repo)
+
+Use your own device/SIM number with a fixed code — never commit a real
+number. On self-hosted / `supabase start` local dev, map test numbers to
+fixed codes so no SMS is sent and only the mapped code verifies:
+
+```sh
+SMS_TEST_OTP=<your-own-10-digit-number>:123456
+# wired to GOTRUE_SMS_TEST_OTP in docker-compose.yml
+```
+
+Flow: enter your number → Supabase skips delivery → type the mapped code →
+logged in. For hosted projects, use a personal test SIM on the staging
+project and remove test numbers before production. See
+`docs/truecaller-eval.md` for why Truecaller 1-tap was evaluated and
+rejected (paid, no Expo path, doesn't plug into Supabase Auth).
+
+### Going live: MSG91 + hook checklist
+
+1. **MSG91 account** (control.msg91.com) with an Indian route.
+2. **DLT registration** (India regulatory, required for SMS): register your
+   business + headers (sender IDs) on the DLT portal (Jio/Vodafone/Idea
+   Videocon/Airtel — any one), create an OTP flow/template in MSG91 using
+   the approved header, note the Flow ID.
+3. **WhatsApp Business Account**: connect a number in MSG91 → WhatsApp,
+   complete Meta business verification, create an authentication template
+   with an OTP body variable (e.g. `mandi_otp_hi`), get it approved, sync
+   templates into MSG91.
+4. **Hook secrets** (never in git):
+   ```sh
+   supabase secrets set MSG91_AUTHKEY=xxxx MSG91_SMS_FLOW_ID=xxxx \
+     MSG91_SENDER_ID=xxxx MSG91_WHATSAPP_NUMBER=91xxxxxxxxxx \
+     MSG91_WHATSAPP_TEMPLATE=mandi_otp_hi
+   # optional: MSG91_SMS_OTP_VAR (default OTP), MSG91_WHATSAPP_LANG (default hi)
+   ```
+5. **Deploy + enable**: `supabase functions deploy send-sms-hook`, then
+   Dashboard → Authentication → Hooks → enable the Send SMS Hook (V2).
+6. **Supabase Auth settings**: enable Phone provider, set OTP expiry
+   (~5 min) and SMS frequency limits; the app adds its own 30s resend
+   cooldown and stops guessing after 5 wrong codes (resend resets it).
+
+Security notes: the OTP is never logged on client or server; hook errors
+are sanitized; Supabase enforces its own per-number rate limits on top.
+
 ## Scripts
 
 | Script                            | What it does                         |
@@ -51,7 +106,10 @@ Quality gate before every push: `npm run typecheck && npm run lint`.
 ```text
 app/
   _layout.tsx            Root: locale bootstrap (stored → device → Hindi),
-                         RTL flags, i18n init, splash gate, Stack
+                         RTL flags, i18n init, splash gate, auth route gate, Stack
+  (auth)/
+    index.tsx            Phone entry (+91 fixed, Indian-mobile validation)
+    verify.tsx           6-box OTP, 30s resend cooldown, attempt limits
   (tabs)/
     _layout.tsx          5 tabs: Home · People · Khata · Sales · Settings
     index.tsx            Home — greeting + 3 giant job buttons (shell)
@@ -146,7 +204,7 @@ supabase/
 | People   | `app/(tabs)/people.tsx`, `features/people`               | ✅ Done (this branch) — photo list + search + add-person   |
 | Khata    | `app/(tabs)/khata.tsx`, `features/khata`                 | ✅ Done (this branch) — picker → balance → entries → share |
 | Sales    | `app/(tabs)/records.tsx`, `features/records`             | Wizard: commodity → weight → rate → expenses → photo → net |
-| Auth OTP | `features/auth`, `lib/sms.ts`, `functions/send-sms-hook` | Login screens (phone → code), deploy hook, MSG91 secrets   |
+| Auth OTP | `features/auth`, `lib/sms.ts`, `functions/send-sms-hook` | ✅ Built: phone → code screens, session gate, providers + hook. Remaining: deploy hook, set secrets, test numbers |
 | WhatsApp | `features/khata/share.ts` (+ `KhataLedger` share button) | ✅ Khata summary share done — more share surfaces later    |
 | Photos   | `lib/upload.ts` + `features/people/photo.ts`             | ✅ Person photos wired — signed URLs + record photos later |
 

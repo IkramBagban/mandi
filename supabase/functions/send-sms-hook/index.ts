@@ -45,7 +45,9 @@ Deno.serve(async (req: Request) => {
     // 2xx tells Supabase the send succeeded.
     return json({}, 200);
   } catch (error) {
-    console.error(`[send-sms-hook] all channels failed: ${error instanceof Error ? error.message : 'unknown'}`);
+    console.error(
+      `[send-sms-hook] all channels failed: ${error instanceof Error ? error.message : 'unknown'}`,
+    );
     // Non-2xx tells Supabase the send failed (it surfaces a rate-limit-safe
     // error to the client; the app maps it to a localized message).
     return json({ error: 'Failed to deliver OTP. Please try again.' }, 502);
