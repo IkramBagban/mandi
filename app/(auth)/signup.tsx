@@ -21,8 +21,8 @@ import { colors, spacing, touchTargets, typography } from '@/theme';
  *
  * OTP ON: phone → one code (creates/confirms the account) → set-password.
  * OTP OFF (default): phone + password on THIS screen → direct
- *   `signUpWithPassword`, zero SMS. Requires phone confirmations OFF in the
- *   Supabase dashboard (see README "Auth") — otherwise signup cannot issue
+ *   `signUpWithPassword`, zero SMS. Requires Email confirmations OFF in the
+ *   Supabase dashboard (Phone provider stays DISABLED — see README "Auth") — otherwise signup cannot issue
  *   a session and the screen says so instead of hanging.
  */
 export default function SignupScreen() {
