@@ -245,7 +245,11 @@
     "setPasswordSubtitleReset": "पुढच्या वेळी नवीन पासवर्डने लॉगिन होईल.",
     "savePassword": "पासवर्ड सेव्ह करा",
     "savingPassword": "सेव्ह होत आहे…",
-    "backToLogin": "लॉगिनवर परत"
+    "backToLogin": "लॉगिनवर परत",
+    "signupSubtitleDirect": "पासवर्ड निवडा — कोड नको.",
+    "errorAlreadyRegistered": "या नंबरचं खातं आधीच आहे. तुमच्या पासवर्डने लॉगिन करा.",
+    "errorSignupUnavailable": "सध्या साइनअप होत नाहीये. कृपया नंतर प्रयत्न करा.",
+    "forgotUnavailable": "पासवर्ड बदलायला एकदाचा कोड लागतो, आणि कोड सध्या बंद आहेत. कृपया नंतर प्रयत्न करा."
   },
   "validation": {
     "amountRequired": "कृपया रक्कम लिहा.",

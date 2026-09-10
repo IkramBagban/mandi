@@ -181,16 +181,31 @@ tests/
 - **Supabase: schema file + typed client + stubs.** No live project required.
   RLS-first: every table forces `owner_id = auth.uid()`; the app uses the anon
   key only. Regenerate `database.types.ts` via `supabase gen types` once linked.
-- **Auth: phone+password primary, OTP secondary.** Login offers password
-  first (phone + password via `signInWithPassword` — zero SMS) with the OTP
-  flow on a second tab. Signup is phone → one OTP (confirms the number,
-  creates the account if new) → set password; forgot-password is phone →
-  OTP → new password (both via `updateUser` on the OTP session, see
-  `src/features/auth/`). Password rule is minimal: 6+ characters, numeric
-  PIN allowed. Delivery is server-side through a Supabase **Send SMS Hook**
-  (`supabase/functions/send-sms-hook/`) that tries WhatsApp first and falls
-  back to **MSG91 SMS** (`src/lib/sms` provider contract). MSG91 keys live
-  in Edge Function secrets — never in the app.
+- **Auth: phone+password primary, OTP behind a flag (default OFF).** Login
+  is password-only unless `EXPO_PUBLIC_OTP_ENABLED=true` (central switch in
+  `src/lib/authFlags.ts` — unset/anything-else means OFF and no OTP code
+  path can execute, so zero SMS is ever spent). Flag OFF: signup is phone +
+  set-password directly via `signUpWithPassword`; forgot-password shows an
+  explanatory message instead of a dead button. Flag ON: the full OTP flows
+  (Login OTP tab, signup/recovery OTP verify → set password via `updateUser`
+  on the OTP session, see `src/features/auth/`). Password rule is minimal:
+  6+ characters, numeric PIN allowed. Delivery is server-side through a
+  Supabase **Send SMS Hook** (`supabase/functions/send-sms-hook/`) that
+  tries WhatsApp first and falls back to **MSG91 SMS** (`src/lib/sms`
+  provider contract). MSG91 keys live in Edge Function secrets — never in
+  the app.
+  - Flip the flag: set `EXPO_PUBLIC_OTP_ENABLED=true` in `.env`, then
+    restart `npx expo start` (dev) or rebuild (production — `EXPO_PUBLIC_*`
+    vars bake in at build time).
+  - REQUIRED dashboard match: Supabase Dashboard → Authentication →
+    Providers → Phone → **Confirm phone must be OFF while the flag is off**
+    (else direct signup cannot issue a session and users see
+    `auth.errorSignupUnavailable`). Turn confirmations ON only together with
+    the flag AND the MSG91 hook live.
+  - Future upgrade path: move the flag to a remote `app_config` table (one
+    row, `otp_enabled` boolean, public-read RLS) read at boot when we want
+    no-rebuild flips — the call sites already go through `isOtpEnabled()`,
+    so only that function needs to consult the table with an env fallback.
 - **Photos: compress on-device first** (`expo-image-manipulator` current
   contextual API — `manipulate().resize().renderAsync()`), max 1024px / JPEG
   0.7. Recognizable is enough; keeps mandi-network uploads fast.

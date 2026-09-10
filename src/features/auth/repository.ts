@@ -118,6 +118,31 @@ export async function setPassword(input: SetPasswordInput): Promise<AuthUser> {
   return toAuthUser(data.user);
 }
 
+/**
+ * Direct signup: phone + password, NO OTP step.
+ *
+ * Used only while the OTP flag is OFF (see `lib/authFlags`). Requires phone
+ * confirmations to be OFF in the Supabase dashboard — then `signUp` issues
+ * a session immediately. If confirmations are ON, no session comes back and
+ * this throws `auth.errorSignupUnavailable` (screens show it; the operator
+ * fixes the dashboard, never the user). "User already registered" maps to
+ * `auth.errorAlreadyRegistered` in `./errors`.
+ */
+export async function signUpWithPassword(input: SignInWithPasswordInput): Promise<AuthUser> {
+  const canonical = canonicalPhoneOrThrow(input.phone);
+  const checked = validatePassword(input.password);
+  if (!checked.ok) throw new Error(checked.errorKey);
+  const supabase = getSupabase();
+
+  const { data, error } = await supabase.auth.signUp({
+    phone: toE164Indian(canonical),
+    password: checked.value,
+  });
+  if (error) throw error;
+  if (!data.user || !data.session) throw new Error('auth.errorSignupUnavailable');
+  return toAuthUser(data.user);
+}
+
 /** Current persisted session (`null` when logged out). Survives restarts. */
 export async function getSessionUser(): Promise<AuthUser | null> {
   const {

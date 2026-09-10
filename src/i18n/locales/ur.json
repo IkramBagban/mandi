@@ -245,7 +245,11 @@
     "setPasswordSubtitleReset": "اگلی بار نئے پاس ورڈ سے لاگ اِن ہوگا۔",
     "savePassword": "پاس ورڈ محفوظ کریں",
     "savingPassword": "محفوظ ہو رہا ہے…",
-    "backToLogin": "لاگ اِن پر واپس"
+    "backToLogin": "لاگ اِن پر واپس",
+    "signupSubtitleDirect": "پاس ورڈ چنیں — کوڈ نہیں چاہیے۔",
+    "errorAlreadyRegistered": "اس نمبر کا کھاتہ پہلے سے ہے۔ اپنے پاس ورڈ سے لاگ اِن کریں۔",
+    "errorSignupUnavailable": "سائن اپ ابھی نہیں ہو رہا۔ براہ کرم بعد میں کوشش کریں۔",
+    "forgotUnavailable": "پاس ورڈ بدلنے کے لیے ایک بار کا کوڈ چاہیے، اور کوڈ ابھی بند ہیں۔ براہ کرم بعد میں کوشش کریں۔"
   },
   "validation": {
     "amountRequired": "براہ کرم رقم لکھیں۔",

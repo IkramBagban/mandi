@@ -245,7 +245,11 @@
     "setPasswordSubtitleReset": "Your new password logs you in next time.",
     "savePassword": "Save password",
     "savingPassword": "Saving…",
-    "backToLogin": "Back to login"
+    "backToLogin": "Back to login",
+    "signupSubtitleDirect": "Choose a password — no code needed.",
+    "errorAlreadyRegistered": "This number already has an account. Log in with your password.",
+    "errorSignupUnavailable": "Signup is not available right now. Please try again later.",
+    "forgotUnavailable": "Password reset needs a one-time code, and codes are switched off. Please try again later."
   },
   "validation": {
     "amountRequired": "Please enter an amount.",

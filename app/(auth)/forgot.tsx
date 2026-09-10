@@ -4,17 +4,20 @@ import { Pressable, StyleSheet, Text, View } from 'react-native';
 
 import { Screen, ScreenSpacer } from '@/components';
 import { PhoneEntry } from '@/features/auth';
-import { colors, spacing, touchTargets, typography } from '@/theme';
+import { isOtpEnabled } from '@/lib/authFlags';
+import { colors, radii, spacing, touchTargets, typography } from '@/theme';
 
 /**
- * Forgot password step 1 — prove the number is yours with a code.
+ * Forgot password — flag-gated.
  *
- * Same OTP entry as signup/login; the verify screen routes to set-password
- * in `recovery` mode, which replaces the password on the OTP-established
- * session. No email, no links, no extra SMS beyond this one code.
+ * OTP ON: phone → code → new password (the usual recovery flow).
+ * OTP OFF (default): there is deliberately NO form here — a reset needs a
+ * code and codes are switched off, so the screen says exactly that plus a
+ * way back, instead of a dead button that burns a tap and delivers nothing.
  */
 export default function ForgotScreen() {
   const { t } = useTranslation();
+  const otpOn = isOtpEnabled();
 
   return (
     <Screen>
@@ -23,7 +26,11 @@ export default function ForgotScreen() {
         <Text style={styles.subtitle}>{t('auth.forgotSubtitle')}</Text>
       </View>
 
-      <PhoneEntry purpose="recovery" autoFocus testIDPrefix="auth-forgot" />
+      {otpOn ? (
+        <PhoneEntry purpose="recovery" autoFocus testIDPrefix="auth-forgot" />
+      ) : (
+        <Text style={styles.unavailable}>{t('auth.forgotUnavailable')}</Text>
+      )}
 
       <ScreenSpacer size={spacing.sm} />
       <Pressable
@@ -51,6 +58,13 @@ const styles = StyleSheet.create({
   subtitle: {
     ...typography.body,
     color: colors.textMuted,
+  },
+  unavailable: {
+    ...typography.body,
+    color: colors.text,
+    backgroundColor: colors.card,
+    borderRadius: radii.md,
+    padding: spacing.md,
   },
   link: {
     alignItems: 'center',

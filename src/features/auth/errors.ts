@@ -43,6 +43,11 @@ export function mapAuthErrorToKey(error: unknown): string {
   if (isNetworkError(error)) return 'auth.errorNoNetwork';
 
   const { status, code, message } = readError(error);
+  // Control-flow keys thrown by the repository (input validation, signup
+  // guards) already ARE renderable keys — pass them straight through.
+  const raw = (message ?? '').trim();
+  if (/^(auth|validation|errors|common)\.[A-Za-z]+$/.test(raw)) return raw;
+
   const text = `${code ?? ''} ${message ?? ''}`.toLowerCase();
 
   if (text.includes('supabase is not configured')) return 'auth.errorNotConfigured';
@@ -66,6 +71,10 @@ export function mapAuthErrorToKey(error: unknown): string {
     text.includes('email or phone not confirmed')
   ) {
     return 'auth.errorCredentialsInvalid';
+  }
+  // Direct (no-OTP) signup hit an existing account — point at Login.
+  if (text.includes('already registered') || text.includes('already been registered')) {
+    return 'auth.errorAlreadyRegistered';
   }
   // Password rejected server-side (too short, or flagged weak/leaked when
   // the project enables leaked-password protection).

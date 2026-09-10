@@ -12,6 +12,7 @@ export {
   setPassword,
   signInWithPassword,
   signOut,
+  signUpWithPassword,
   subscribeToAuthChanges,
   verifyOtp,
 } from './repository';

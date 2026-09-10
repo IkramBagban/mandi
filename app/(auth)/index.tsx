@@ -12,23 +12,24 @@ import {
   signInWithPassword,
   validatePassword,
 } from '@/features/auth';
+import { isOtpEnabled } from '@/lib/authFlags';
 import { validateIndianPhone } from '@/lib/validation';
 import { colors, radii, spacing, touchTargets, typography } from '@/theme';
 
 type LoginTab = 'password' | 'otp';
 
 /**
- * Login — password FIRST (zero SMS), OTP second.
+ * Login — password FIRST (zero SMS), OTP second and flag-gated.
  *
- * Two big tabs, one primary action each: phone + password → `Log in`
- * (`signInWithPassword`), or phone → code on the OTP tab (the old flow,
- * unchanged). New users go to `Create account`, locked-out users to
- * `Forgot password?` — both verify the number by OTP first, then set a
- * password, so the account ends up phone+password either way.
+ * OTP tab exists only when `EXPO_PUBLIC_OTP_ENABLED=true` (see
+ * `lib/authFlags`); with the flag off this screen is password-only and no
+ * OTP code path is reachable from anywhere. New users go to
+ * `Create account`, locked-out users to `Forgot password?`.
  */
 export default function LoginScreen() {
   const { t } = useTranslation();
   const [tab, setTab] = useState<LoginTab>('password');
+  const otpOn = isOtpEnabled();
 
   return (
     <Screen>
@@ -37,42 +38,44 @@ export default function LoginScreen() {
         <Text style={styles.subtitle}>{t('auth.subtitle')}</Text>
       </View>
 
-      <View style={styles.tabs} accessibilityRole="tablist">
-        <Pressable
-          onPress={() => setTab('password')}
-          accessibilityRole="tab"
-          accessibilityState={{ selected: tab === 'password' }}
-          accessibilityLabel={t('auth.passwordTab')}
-          testID="auth-tab-password"
-          style={({ pressed }) => [
-            styles.tab,
-            tab === 'password' && styles.tabActive,
-            pressed && styles.pressed,
-          ]}
-        >
-          <Text style={[styles.tabLabel, tab === 'password' && styles.tabLabelActive]}>
-            {t('auth.passwordTab')}
-          </Text>
-        </Pressable>
-        <Pressable
-          onPress={() => setTab('otp')}
-          accessibilityRole="tab"
-          accessibilityState={{ selected: tab === 'otp' }}
-          accessibilityLabel={t('auth.otpTab')}
-          testID="auth-tab-otp"
-          style={({ pressed }) => [
-            styles.tab,
-            tab === 'otp' && styles.tabActive,
-            pressed && styles.pressed,
-          ]}
-        >
-          <Text style={[styles.tabLabel, tab === 'otp' && styles.tabLabelActive]}>
-            {t('auth.otpTab')}
-          </Text>
-        </Pressable>
-      </View>
+      {otpOn ? (
+        <View style={styles.tabs} accessibilityRole="tablist">
+          <Pressable
+            onPress={() => setTab('password')}
+            accessibilityRole="tab"
+            accessibilityState={{ selected: tab === 'password' }}
+            accessibilityLabel={t('auth.passwordTab')}
+            testID="auth-tab-password"
+            style={({ pressed }) => [
+              styles.tab,
+              tab === 'password' && styles.tabActive,
+              pressed && styles.pressed,
+            ]}
+          >
+            <Text style={[styles.tabLabel, tab === 'password' && styles.tabLabelActive]}>
+              {t('auth.passwordTab')}
+            </Text>
+          </Pressable>
+          <Pressable
+            onPress={() => setTab('otp')}
+            accessibilityRole="tab"
+            accessibilityState={{ selected: tab === 'otp' }}
+            accessibilityLabel={t('auth.otpTab')}
+            testID="auth-tab-otp"
+            style={({ pressed }) => [
+              styles.tab,
+              tab === 'otp' && styles.tabActive,
+              pressed && styles.pressed,
+            ]}
+          >
+            <Text style={[styles.tabLabel, tab === 'otp' && styles.tabLabelActive]}>
+              {t('auth.otpTab')}
+            </Text>
+          </Pressable>
+        </View>
+      ) : null}
 
-      {tab === 'password' ? (
+      {tab === 'password' || !otpOn ? (
         <PasswordTab />
       ) : (
         <PhoneEntry purpose="login" testIDPrefix="auth-otp" />
