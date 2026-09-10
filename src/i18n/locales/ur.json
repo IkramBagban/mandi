@@ -7,6 +7,7 @@
     "back": "پیچھے",
     "done": "ہو گیا",
     "total": "کل",
+    "confirm": "پکا کریں",
     "loading": "لوڈ ہو رہا ہے…",
     "comingSoon": "جلد آ رہا ہے — مکمل اسکرین یہیں بنے گی۔",
     "retry": "دوبارہ کوشش کریں",
@@ -38,7 +39,13 @@
     "openKhata": "کھاتہ",
     "openKhataHint": "ادھار، ادائیگی، بقایا",
     "openRecords": "نئی فروخت",
-    "openRecordsHint": "وزن، بھاؤ، خرچ"
+    "openRecordsHint": "وزن، بھاؤ، خرچ",
+    "udhaari": "ادھار",
+    "toCollect": "لینا ہے",
+    "toPay": "دینا ہے",
+    "todayIn": "آج وصول",
+    "topDebtors": "سب سے زیادہ ادھار",
+    "noDebtors": "کوئی ادھار نہیں۔ سب صاف!"
   },
   "people": {
     "title": "لوگ",
@@ -126,7 +133,50 @@
     "subtitle": "وزن اور بھاؤ کے ساتھ ہر نیلامی۔",
     "newSale": "نئی فروخت",
     "emptyTitle": "ابھی کوئی فروخت نہیں",
-    "emptyBody": "وزن اور بھاؤ کے ساتھ پہلی فروخت لکھیں۔"
+    "emptyBody": "وزن اور بھاؤ کے ساتھ پہلی فروخت لکھیں۔",
+    "searchPlaceholder": "شخص تلاش کریں",
+    "allPeople": "سب",
+    "today": "آج",
+    "dayNet": "دن کا کل",
+    "noSalesForDay": "اس دن کوئی فروخت نہیں۔"
+  },
+  "sale": {
+    "title": "نئی فروخت",
+    "subtitle": "وزن، بھاؤ، خرچ — پھر محفوظ کریں۔",
+    "person": "کس کا مال؟",
+    "searchPerson": "نام تلاش کریں",
+    "date": "تاریخ",
+    "today": "آج",
+    "commodity": "فصل",
+    "variety": "کوالٹی",
+    "qtyKg": "وزن (کلو)",
+    "crates": "کریٹ / بوری",
+    "rate": "بھاؤ فی کلو (₹)",
+    "expenses": "منہا: خرچ",
+    "hamali": "ہمالی",
+    "tolai": "تولائی",
+    "commissionPct": "کمیشن %",
+    "transport": "کرایہ",
+    "other": "دیگر",
+    "total": "کل",
+    "expensesTotal": "خرچ",
+    "netPayable": "کسان کو ملے گا",
+    "photo": "بل / مال تصویر",
+    "photoOptional": "چاہیں تو",
+    "addPhoto": "تصویر شامل کریں",
+    "changePhoto": "بدلیں",
+    "review": "جانچیں، پھر محفوظ کریں",
+    "confirm": "فروخت محفوظ کریں",
+    "saving": "محفوظ ہو رہا ہے…",
+    "fixErrors": "پہلے سرخ خانے درست کریں۔"
+  },
+  "commodities": {
+    "mosambi": "موسمی",
+    "santra": "سنترا",
+    "anar": "انار",
+    "kela": "کیلا",
+    "pyaz": "پیاز",
+    "tamatar": "ٹماٹر"
   },
   "settings": {
     "title": "ترتیبات",
@@ -163,6 +213,8 @@
     "amountTooLarge": "رقم بہت بڑی ہے۔",
     "phoneInvalid": "موبائل نمبر 10 ہندسوں کا ہونا چاہیے۔",
     "nameRequired": "براہ کرم نام لکھیں۔",
+    "personRequired": "براہ کرم شخص چنیں۔",
+    "percentInvalid": "فیصد 0 سے 100 تک ہو۔",
     "qtyInvalid": "وزن صفر سے زیادہ ہونا چاہیے۔"
   }
 }

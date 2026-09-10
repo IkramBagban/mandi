@@ -7,6 +7,7 @@
     "back": "पीछे",
     "done": "हो गया",
     "total": "कुल",
+    "confirm": "पक्का करें",
     "loading": "लोड हो रहा है…",
     "comingSoon": "जल्द आ रहा है — पूरी स्क्रीन यहीं बनेगी।",
     "retry": "फिर कोशिश करें",
@@ -38,7 +39,13 @@
     "openKhata": "खाता",
     "openKhataHint": "उधार, पेमेंट, बकाया",
     "openRecords": "नई बिक्री",
-    "openRecordsHint": "वज़न, भाव, खर्च"
+    "openRecordsHint": "वज़न, भाव, खर्च",
+    "udhaari": "उधारी",
+    "toCollect": "लेना है",
+    "toPay": "देना है",
+    "todayIn": "आज वसूला",
+    "topDebtors": "सबसे ज़्यादा उधारी",
+    "noDebtors": "कोई उधारी नहीं। सब साफ़!"
   },
   "people": {
     "title": "लोग",
@@ -126,7 +133,50 @@
     "subtitle": "वज़न और भाव के साथ हर नीलामी।",
     "newSale": "नई बिक्री",
     "emptyTitle": "अभी कोई बिक्री नहीं",
-    "emptyBody": "वज़न और भाव के साथ पहली बिक्री लिखें।"
+    "emptyBody": "वज़न और भाव के साथ पहली बिक्री लिखें।",
+    "searchPlaceholder": "व्यक्ति खोजें",
+    "allPeople": "सभी",
+    "today": "आज",
+    "dayNet": "दिन का कुल",
+    "noSalesForDay": "इस दिन कोई बिक्री नहीं।"
+  },
+  "sale": {
+    "title": "नई बिक्री",
+    "subtitle": "वज़न, भाव, खर्च — फिर सेव करें।",
+    "person": "किसका माल?",
+    "searchPerson": "नाम खोजें",
+    "date": "तारीख",
+    "today": "आज",
+    "commodity": "फसल",
+    "variety": "क्वालिटी",
+    "qtyKg": "वज़न (किलो)",
+    "crates": "कैरेट / बोरी",
+    "rate": "भाव प्रति किलो (₹)",
+    "expenses": "घटाएँ: खर्च",
+    "hamali": "हमाली",
+    "tolai": "तोलाई",
+    "commissionPct": "कमीशन %",
+    "transport": "भाड़ा",
+    "other": "अन्य",
+    "total": "कुल",
+    "expensesTotal": "खर्च",
+    "netPayable": "किसान को मिलेगा",
+    "photo": "बिल / माल फोटो",
+    "photoOptional": "चाहें तो",
+    "addPhoto": "फोटो जोड़ें",
+    "changePhoto": "बदलें",
+    "review": "जाँचें, फिर सेव करें",
+    "confirm": "बिक्री सेव करें",
+    "saving": "सेव हो रहा है…",
+    "fixErrors": "पहले लाल खाने ठीक करें।"
+  },
+  "commodities": {
+    "mosambi": "मोसंबी",
+    "santra": "संतरा",
+    "anar": "अनार",
+    "kela": "केला",
+    "pyaz": "प्याज़",
+    "tamatar": "टमाटर"
   },
   "settings": {
     "title": "सेटिंग",
@@ -163,6 +213,8 @@
     "amountTooLarge": "रकम बहुत बड़ी है।",
     "phoneInvalid": "मोबाइल नंबर 10 अंक का होना चाहिए।",
     "nameRequired": "कृपया नाम लिखें।",
+    "personRequired": "कृपया व्यक्ति चुनें।",
+    "percentInvalid": "प्रतिशत 0 से 100 तक हो।",
     "qtyInvalid": "वज़न शून्य से ज़्यादा होना चाहिए।"
   }
 }

@@ -7,6 +7,7 @@
     "back": "Back",
     "done": "Done",
     "total": "Total",
+    "confirm": "Confirm",
     "loading": "Loading…",
     "comingSoon": "Coming soon — the full screen will be built here.",
     "retry": "Try again",
@@ -38,7 +39,13 @@
     "openKhata": "Khata",
     "openKhataHint": "Udhaar, payment, balance",
     "openRecords": "New sale",
-    "openRecordsHint": "Weight, rate, expenses"
+    "openRecordsHint": "Weight, rate, expenses",
+    "udhaari": "Udhaari",
+    "toCollect": "To collect",
+    "toPay": "To pay",
+    "todayIn": "Collected today",
+    "topDebtors": "Most udhaari",
+    "noDebtors": "No udhaari. All clear!"
   },
   "people": {
     "title": "People",
@@ -126,7 +133,50 @@
     "subtitle": "Every auction sale with weight and rate.",
     "newSale": "New sale",
     "emptyTitle": "No sales yet",
-    "emptyBody": "Record your first sale with weight and rate."
+    "emptyBody": "Record your first sale with weight and rate.",
+    "searchPlaceholder": "Search person",
+    "allPeople": "Everyone",
+    "today": "Today",
+    "dayNet": "Day total",
+    "noSalesForDay": "No sales this day."
+  },
+  "sale": {
+    "title": "New sale",
+    "subtitle": "Weight, rate, expenses — then save.",
+    "person": "Whose maal?",
+    "searchPerson": "Search name",
+    "date": "Date",
+    "today": "Today",
+    "commodity": "Commodity",
+    "variety": "Quality",
+    "qtyKg": "Weight (kg)",
+    "crates": "Crates / bags",
+    "rate": "Rate per kg (₹)",
+    "expenses": "Less: expenses",
+    "hamali": "Hamali",
+    "tolai": "Tolai",
+    "commissionPct": "Commission %",
+    "transport": "Transport",
+    "other": "Other",
+    "total": "Total",
+    "expensesTotal": "Expenses",
+    "netPayable": "Farmer gets",
+    "photo": "Bill / maal photo",
+    "photoOptional": "Optional",
+    "addPhoto": "Add photo",
+    "changePhoto": "Change",
+    "review": "Check, then save",
+    "confirm": "Save sale",
+    "saving": "Saving…",
+    "fixErrors": "Please fix the red fields first."
+  },
+  "commodities": {
+    "mosambi": "Mosambi",
+    "santra": "Orange",
+    "anar": "Pomegranate",
+    "kela": "Banana",
+    "pyaz": "Onion",
+    "tamatar": "Tomato"
   },
   "settings": {
     "title": "Settings",
@@ -163,6 +213,8 @@
     "amountTooLarge": "Amount is too large.",
     "phoneInvalid": "Phone number must be 10 digits.",
     "nameRequired": "Please enter a name.",
+    "personRequired": "Please choose a person.",
+    "percentInvalid": "Percent must be 0 to 100.",
     "qtyInvalid": "Weight must be more than zero."
   }
 }

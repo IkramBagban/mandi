@@ -7,6 +7,7 @@
     "back": "मागे",
     "done": "झालं",
     "total": "एकूण",
+    "confirm": "नक्की करा",
     "loading": "लोड होत आहे…",
     "comingSoon": "लवकरच येत आहे — पूर्ण स्क्रीन इथेच बनेल.",
     "retry": "पुन्हा प्रयत्न करा",
@@ -38,7 +39,13 @@
     "openKhata": "खाते",
     "openKhataHint": "उधारी, पेमेंट, बाकी",
     "openRecords": "नवीन विक्री",
-    "openRecordsHint": "वजन, भाव, खर्च"
+    "openRecordsHint": "वजन, भाव, खर्च",
+    "udhaari": "उधारी",
+    "toCollect": "येणे आहे",
+    "toPay": "देणे आहे",
+    "todayIn": "आज वसूल",
+    "topDebtors": "जास्त उधारी",
+    "noDebtors": "उधारी नाही. सर्व साफ!"
   },
   "people": {
     "title": "लोक",
@@ -126,7 +133,50 @@
     "subtitle": "वजन आणि भावासह प्रत्येक लिलाव.",
     "newSale": "नवीन विक्री",
     "emptyTitle": "अजून विक्री नाही",
-    "emptyBody": "वजन आणि भावासह पहिली विक्री लिहा."
+    "emptyBody": "वजन आणि भावासह पहिली विक्री लिहा.",
+    "searchPlaceholder": "व्यक्ती शोधा",
+    "allPeople": "सर्व",
+    "today": "आज",
+    "dayNet": "दिवसाचा एकूण",
+    "noSalesForDay": "या दिवशी विक्री नाही."
+  },
+  "sale": {
+    "title": "नवीन विक्री",
+    "subtitle": "वजन, भाव, खर्च — मग जतन करा.",
+    "person": "कोणाचा माल?",
+    "searchPerson": "नाव शोधा",
+    "date": "तारीख",
+    "today": "आज",
+    "commodity": "पीक",
+    "variety": "प्रत",
+    "qtyKg": "वजन (किलो)",
+    "crates": "कॅरेट / पोती",
+    "rate": "भाव प्रति किलो (₹)",
+    "expenses": "वजा: खर्च",
+    "hamali": "हमाली",
+    "tolai": "तोलाई",
+    "commissionPct": "कमिशन %",
+    "transport": "भाडे",
+    "other": "इतर",
+    "total": "एकूण",
+    "expensesTotal": "खर्च",
+    "netPayable": "शेतकऱ्याला मिळणार",
+    "photo": "बिल / माल फोटो",
+    "photoOptional": "हवे तर",
+    "addPhoto": "फोटो जोडा",
+    "changePhoto": "बदला",
+    "review": "तपासा, मग जतन करा",
+    "confirm": "विक्री जतन करा",
+    "saving": "जतन होत आहे…",
+    "fixErrors": "आधी लाल रकाने सुधारा."
+  },
+  "commodities": {
+    "mosambi": "मोसंबी",
+    "santra": "संत्रं",
+    "anar": "डाळिंब",
+    "kela": "केळं",
+    "pyaz": "कांदा",
+    "tamatar": "टोमॅटो"
   },
   "settings": {
     "title": "सेटिंग",
@@ -163,6 +213,8 @@
     "amountTooLarge": "रक्कम खूप मोठी आहे.",
     "phoneInvalid": "मोबाईल नंबर 10 अंकी हवा.",
     "nameRequired": "कृपया नाव लिहा.",
+    "personRequired": "कृपया व्यक्ती निवडा.",
+    "percentInvalid": "टक्के 0 ते 100 हवे.",
     "qtyInvalid": "वजन शून्यापेक्षा जास्त हवे."
   }
 }
