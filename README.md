@@ -199,14 +199,14 @@ supabase/
 
 ## Stubs for the next workers
 
-| Area     | Stub location                                            | Build next                                                 |
-| -------- | -------------------------------------------------------- | ---------------------------------------------------------- |
-| People   | `app/(tabs)/people.tsx`, `features/people`               | ✅ Done (this branch) — photo list + search + add-person   |
-| Khata    | `app/(tabs)/khata.tsx`, `features/khata`                 | ✅ Done (this branch) — picker → balance → entries → share |
-| Sales    | `app/(tabs)/records.tsx`, `features/records`             | Wizard: commodity → weight → rate → expenses → photo → net |
+| Area     | Stub location                                            | Build next                                                                                                        |
+| -------- | -------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------- |
+| People   | `app/(tabs)/people.tsx`, `features/people`               | ✅ Done (this branch) — photo list + search + add-person                                                          |
+| Khata    | `app/(tabs)/khata.tsx`, `features/khata`                 | ✅ Done (this branch) — picker → balance → entries → share                                                        |
+| Sales    | `app/(tabs)/records.tsx`, `features/records`             | Wizard: commodity → weight → rate → expenses → photo → net                                                        |
 | Auth OTP | `features/auth`, `lib/sms.ts`, `functions/send-sms-hook` | ✅ Built: phone → code screens, session gate, providers + hook. Remaining: deploy hook, set secrets, test numbers |
-| WhatsApp | `features/khata/share.ts` (+ `KhataLedger` share button) | ✅ Khata summary share done — more share surfaces later    |
-| Photos   | `lib/upload.ts` + `features/people/photo.ts`             | ✅ Person photos wired — signed URLs + record photos later |
+| WhatsApp | `features/khata/share.ts` (+ `KhataLedger` share button) | ✅ Khata summary share done — more share surfaces later                                                           |
+| Photos   | `lib/upload.ts` + `features/people/photo.ts`             | ✅ Person photos wired — signed URLs + record photos later                                                        |
 
 ## Sale records + Udhaari dashboard
 
