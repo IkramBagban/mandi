@@ -3,6 +3,10 @@
  *
  * Regenerate with the Supabase CLI (`supabase gen types`) once the project is
  * linked — until then keep these in sync with the migration file by hand.
+ *
+ * NOTE: rows are `type` aliases (not `interface`) on purpose — only object
+ * literal types get an implicit index signature, which the Supabase client's
+ * `Record<string, unknown>` generics require.
  */
 
 export type PersonType =
