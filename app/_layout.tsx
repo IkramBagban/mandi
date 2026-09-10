@@ -50,6 +50,7 @@ export default function RootLayout() {
       <StatusBar style="auto" />
       <Stack screenOptions={{ headerShown: false }}>
         <Stack.Screen name="(tabs)" />
+        <Stack.Screen name="person/[id]" />
       </Stack>
     </I18nextProvider>
   );

@@ -18,16 +18,19 @@ export function toWhatsAppNumber(phone: string | null | undefined): string | nul
   return null;
 }
 
-/** Open WhatsApp with a prefilled khata summary (chat picker when no number). */
+/**
+ * Open WhatsApp for a number. With `message`, prefill the khata summary;
+ * without it, just open the chat (used by the person's WhatsApp button).
+ * Falls back to the generic share sheet when no usable number exists.
+ */
 export async function shareKhataOnWhatsApp(
   phone: string | null | undefined,
-  message: string,
+  message?: string,
 ): Promise<ShareStatus> {
   try {
     const number = toWhatsAppNumber(phone);
-    const url = number
-      ? `https://wa.me/${number}?text=${encodeURIComponent(message)}`
-      : `whatsapp://send?text=${encodeURIComponent(message)}`;
+    const text = message ? `?text=${encodeURIComponent(message)}` : '';
+    const url = number ? `https://wa.me/${number}${text}` : `whatsapp://send${text}`;
     const canOpen = await Linking.canOpenURL(url);
     if (!canOpen) return 'noApp';
     await Linking.openURL(url);
