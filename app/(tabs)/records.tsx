@@ -7,11 +7,12 @@ import { MaterialIcons } from '@expo/vector-icons';
 import { BigButton, EmptyState, PersonAvatar, Screen } from '@/components';
 import type { Person } from '@/features/people/types';
 import { commodityLabel } from '@/features/records/commodities';
-import { addDaysISO, isTodayISO, todayISODate } from '@/features/records/dates';
+import { shiftDateKey, todayKey } from '@/features/khata/types';
 import { searchPeople } from '@/features/records/people';
 import { listSalesByDay } from '@/features/records/repository';
 import type { SaleRecord } from '@/features/records/types';
 import { formatDate, formatINR, formatKg } from '@/lib/format';
+import { RepoError } from '@/lib/offline';
 import { useSettingsStore } from '@/store/settings';
 import { colors, radii, spacing, touchTargets, typography } from '@/theme';
 
@@ -24,27 +25,37 @@ export default function RecordsScreen() {
   const { t } = useTranslation();
   const language = useSettingsStore((s) => s.language);
 
-  const [date, setDate] = useState(todayISODate());
+  const [date, setDate] = useState(todayKey());
   const [query, setQuery] = useState('');
   const [sales, setSales] = useState<SaleRecord[]>([]);
   const [people, setPeople] = useState<Map<string, Person>>(new Map());
   const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState<string | null>(null);
 
-  const load = useCallback(async (day: string) => {
-    setLoading(true);
-    try {
-      const [daySales, { people: all }] = await Promise.all([
-        listSalesByDay(day),
-        searchPeople(''),
-      ]);
-      setSales(daySales);
-      setPeople(new Map(all.map((p) => [p.id, p])));
-    } catch {
-      setSales([]);
-    } finally {
-      setLoading(false);
-    }
-  }, []);
+  const load = useCallback(
+    async (day: string) => {
+      setLoading(true);
+      setLoadError(null);
+      try {
+        // Sequential on purpose: searchPeople may run the first-launch demo
+        // seed, and the sales read must see the seeded rows.
+        const { people: all } = await searchPeople('');
+        const daySales = await listSalesByDay(day);
+        setSales(daySales);
+        setPeople(new Map(all.map((p) => [p.id, p])));
+      } catch (err) {
+        setSales([]);
+        setLoadError(
+          err instanceof RepoError && err.code === 'offline'
+            ? t('errors.offline')
+            : t('errors.failed'),
+        );
+      } finally {
+        setLoading(false);
+      }
+    },
+    [t],
+  );
 
   // Initial load + refresh after saving a sale in the form.
   useFocusEffect(
@@ -63,9 +74,10 @@ export default function RecordsScreen() {
   });
   const dayNet = visible.reduce((sum, s) => sum + s.net, 0);
 
-  const dateLabel = isTodayISO(date)
-    ? `${t('records.today')} · ${formatDate(date, language)}`
-    : formatDate(date, language);
+  const dateLabel =
+    date === todayKey()
+      ? `${t('records.today')} · ${formatDate(date, language)}`
+      : formatDate(date, language);
 
   return (
     <Screen>
@@ -83,7 +95,7 @@ export default function RecordsScreen() {
 
       <View style={styles.stepper}>
         <Pressable
-          onPress={() => setDate((d) => addDaysISO(d, -1))}
+          onPress={() => setDate((d) => shiftDateKey(d, -1))}
           accessibilityRole="button"
           accessibilityLabel="−1"
           testID="records-day-prev"
@@ -93,7 +105,7 @@ export default function RecordsScreen() {
         </Pressable>
         <Text style={styles.dateLabel}>{dateLabel}</Text>
         <Pressable
-          onPress={() => setDate((d) => addDaysISO(d, 1))}
+          onPress={() => setDate((d) => shiftDateKey(d, 1))}
           accessibilityRole="button"
           accessibilityLabel="+1"
           testID="records-day-next"
@@ -119,30 +131,49 @@ export default function RecordsScreen() {
 
       {loading ? (
         <ActivityIndicator size="large" color={colors.primary} testID="records-loading" />
-      ) : visible.length === 0 ? (
-        <EmptyState icon="scale" title={t('records.noSalesForDay')} body={t('records.emptyBody')} />
       ) : (
         <View style={styles.list}>
-          <View style={styles.totalCard} testID="records-day-total">
-            <Text style={styles.totalLabel}>{t('records.dayNet')}</Text>
-            <Text style={styles.totalValue}>{formatINR(dayNet, language)}</Text>
-          </View>
-          {visible.map((sale) => {
-            const person = sale.person_id ? people.get(sale.person_id) : undefined;
-            return (
-              <View key={sale.id} style={styles.row} testID={`records-row-${sale.id}`}>
-                <PersonAvatar name={person?.name ?? '?'} photoUrl={person?.photo_url} size={56} />
-                <View style={styles.rowText}>
-                  <Text style={styles.rowName}>{person?.name ?? '?'}</Text>
-                  <Text style={styles.rowSub}>
-                    {commodityLabel(t, sale.commodity)}
-                    {sale.variety ? ` ${sale.variety}` : ''} · {formatKg(sale.qty_kg, language)}
-                  </Text>
-                </View>
-                <Text style={styles.rowNet}>{formatINR(sale.net, language)}</Text>
+          {loadError ? (
+            <View style={styles.errorBox} testID="records-error">
+              <MaterialIcons name="cloud-off" size={28} color={colors.danger} />
+              <Text style={styles.errorText}>{loadError}</Text>
+            </View>
+          ) : null}
+          {visible.length === 0 && !loadError ? (
+            <EmptyState
+              icon="scale"
+              title={t('records.noSalesForDay')}
+              body={t('records.emptyBody')}
+            />
+          ) : null}
+          {visible.length > 0 ? (
+            <View style={styles.list}>
+              <View style={styles.totalCard} testID="records-day-total">
+                <Text style={styles.totalLabel}>{t('records.dayNet')}</Text>
+                <Text style={styles.totalValue}>{formatINR(dayNet, language)}</Text>
               </View>
-            );
-          })}
+              {visible.map((sale) => {
+                const person = sale.person_id ? people.get(sale.person_id) : undefined;
+                return (
+                  <View key={sale.id} style={styles.row} testID={`records-row-${sale.id}`}>
+                    <PersonAvatar
+                      name={person?.name ?? '?'}
+                      photoUrl={person?.photo_url}
+                      size={56}
+                    />
+                    <View style={styles.rowText}>
+                      <Text style={styles.rowName}>{person?.name ?? '?'}</Text>
+                      <Text style={styles.rowSub}>
+                        {commodityLabel(t, sale.commodity)}
+                        {sale.variety ? ` ${sale.variety}` : ''} · {formatKg(sale.qty_kg, language)}
+                      </Text>
+                    </View>
+                    <Text style={styles.rowNet}>{formatINR(sale.net, language)}</Text>
+                  </View>
+                );
+              })}
+            </View>
+          ) : null}
         </View>
       )}
     </Screen>
@@ -206,6 +237,19 @@ const styles = StyleSheet.create({
   },
   list: {
     gap: spacing.sm,
+  },
+  errorBox: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.sm,
+    backgroundColor: colors.dangerSoft,
+    borderRadius: radii.md,
+    padding: spacing.md,
+  },
+  errorText: {
+    ...typography.body,
+    color: colors.danger,
+    flex: 1,
   },
   totalCard: {
     backgroundColor: colors.primarySoft,

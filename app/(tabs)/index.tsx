@@ -8,8 +8,9 @@ import { BigButton, PersonAvatar, Screen } from '@/components';
 import { listAllEntries } from '@/features/khata/repository';
 import { summarizeUdhaari, type UdhaariSummary } from '@/features/khata/udhaari';
 import { searchPeople } from '@/features/records/people';
-import { todayISODate } from '@/features/records/dates';
+import { todayKey } from '@/features/khata/types';
 import { formatINR } from '@/lib/format';
+import { RepoError } from '@/lib/offline';
 import { useSettingsStore } from '@/store/settings';
 import { colors, radii, spacing, typography } from '@/theme';
 
@@ -24,18 +25,28 @@ export default function HomeScreen() {
 
   const [summary, setSummary] = useState<UdhaariSummary | null>(null);
   const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState<string | null>(null);
 
   const load = useCallback(async () => {
     setLoading(true);
+    setLoadError(null);
     try {
-      const [{ people }, entries] = await Promise.all([searchPeople(''), listAllEntries()]);
-      setSummary(summarizeUdhaari(entries, people, todayISODate()));
-    } catch {
+      // Sequential on purpose: searchPeople may run the first-launch demo
+      // seed, and the ledger read must see the seeded entries.
+      const { people } = await searchPeople('');
+      const entries = await listAllEntries();
+      setSummary(summarizeUdhaari(entries, people, todayKey()));
+    } catch (err) {
       setSummary(null);
+      setLoadError(
+        err instanceof RepoError && err.code === 'offline'
+          ? t('errors.offline')
+          : t('errors.failed'),
+      );
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [t]);
 
   useFocusEffect(
     useCallback(() => {
@@ -97,6 +108,11 @@ export default function HomeScreen() {
               ))}
             </View>
           ) : null}
+        </View>
+      ) : loadError ? (
+        <View style={styles.errorBox} testID="home-error">
+          <MaterialIcons name="cloud-off" size={40} color={colors.danger} />
+          <Text style={styles.errorText}>{loadError}</Text>
         </View>
       ) : (
         <View style={styles.clearBox} testID="home-no-debtors">
@@ -244,6 +260,18 @@ const styles = StyleSheet.create({
   clearText: {
     ...typography.bodyBold,
     color: colors.primaryDark,
+    textAlign: 'center',
+  },
+  errorBox: {
+    alignItems: 'center',
+    gap: spacing.sm,
+    backgroundColor: colors.dangerSoft,
+    borderRadius: radii.md,
+    padding: spacing.lg,
+  },
+  errorText: {
+    ...typography.bodyBold,
+    color: colors.danger,
     textAlign: 'center',
   },
 });

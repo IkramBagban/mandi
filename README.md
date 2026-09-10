@@ -171,10 +171,14 @@ supabase/
 - **Money math** lives in one place: `calculateSale` (`records/calculations`);
   `total = qty × rate`, `commission = total × % / 100`,
   `net = total − (hamali+tolai+commission+transport+other)`.
-- **Demo mode**: with no Supabase env vars, repositories serve clearly-fake
-  seed data (see `records/demo.ts`, `khata/demo.ts`) so every screen works in
-  Expo Go; writes stay in memory for the session. Set the env vars and the
-  same code talks to Supabase (RLS-scoped, `owner_id` from the session).
+- **Demo mode**: with no Supabase env vars and an empty people list, the first
+  `searchPeople` call runs the at-most-once `seedDemoData`
+  (`records/demo.ts`, flag-guarded in AsyncStorage): sample people, sales saved
+  through the real `saveSaleWithKhata` (so khata mirrors post normally), and
+  one cash collection today. Seeded rows live in the same offline caches as
+  real rows — editable, deletable, never reseeded — and never run once env
+  vars exist. Date keys (`todayKey`/`shiftDateKey`) and person filtering
+  (`filterPeople`) are reused from the people-khata lane, not duplicated.
 - **i18n**: new `sale.*`, `commodities.*`, `home.udhaari*`, `records.*` keys in
   all four locales (en/hi/mr/ur share the exact same key set — verify by
   flattening each JSON file and diffing the key lists before push).

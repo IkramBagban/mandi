@@ -22,7 +22,7 @@ import {
   defaultGradeFor,
   gradesFor,
 } from '@/features/records/commodities';
-import { addDaysISO, isTodayISO, todayISODate } from '@/features/records/dates';
+import { shiftDateKey, todayKey } from '@/features/khata/types';
 import { saveSaleWithKhata } from '@/features/records/saveSale';
 import { tv, validateSaleForm, type SaleFormValues } from '@/features/records/validate';
 import { formatDate } from '@/lib/format';
@@ -60,7 +60,7 @@ export default function NewSaleScreen() {
   const language = useSettingsStore((s) => s.language);
 
   const [person, setPerson] = useState<Person | null>(null);
-  const [date, setDate] = useState(todayISODate());
+  const [date, setDate] = useState(todayKey());
   const [commodity, setCommodity] = useState(COMMODITIES[0]?.id ?? 'mosambi');
   const [variety, setVariety] = useState(defaultGradeFor(COMMODITIES[0]?.id ?? 'mosambi'));
   const [qty, setQty] = useState('');
@@ -170,9 +170,10 @@ export default function NewSaleScreen() {
     }
   };
 
-  const dateLabel = isTodayISO(date)
-    ? `${t('sale.today')} · ${formatDate(date, language)}`
-    : formatDate(date, language);
+  const dateLabel =
+    date === todayKey()
+      ? `${t('sale.today')} · ${formatDate(date, language)}`
+      : formatDate(date, language);
 
   return (
     <Screen>
@@ -198,7 +199,7 @@ export default function NewSaleScreen() {
         <Text style={styles.label}>{t('sale.date')}</Text>
         <View style={styles.stepper}>
           <Pressable
-            onPress={() => setDate((d) => addDaysISO(d, -1))}
+            onPress={() => setDate((d) => shiftDateKey(d, -1))}
             accessibilityRole="button"
             accessibilityLabel="−1"
             testID="sale-day-prev"
@@ -208,7 +209,7 @@ export default function NewSaleScreen() {
           </Pressable>
           <Text style={styles.dateLabel}>{dateLabel}</Text>
           <Pressable
-            onPress={() => setDate((d) => addDaysISO(d, 1))}
+            onPress={() => setDate((d) => shiftDateKey(d, 1))}
             accessibilityRole="button"
             accessibilityLabel="+1"
             testID="sale-day-next"
