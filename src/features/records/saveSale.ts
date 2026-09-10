@@ -1,5 +1,6 @@
 import { postSaleToKhata } from '@/features/khata/autoPost';
 import type { KhataEntry } from '@/features/khata/types';
+import { getWriteOwnerId } from '@/lib/dbErrors';
 import { STORAGE_BUCKETS, uploadPhoto } from '@/lib/upload';
 import { getSupabase, isSupabaseConfigured } from '@/lib/supabase';
 
@@ -58,6 +59,13 @@ async function maybeUploadPhoto(localUri: string | null): Promise<string | null>
 
 export async function saveSaleWithKhata(input: SaveSaleInput): Promise<SavedSale> {
   const calc = calculateSale(input);
+
+  // Fail fast when the live DB is configured but nobody is signed in.
+  // Without this, the receipt-photo upload below (Storage has no session
+  // gate of its own) is rejected by RLS and the raw Postgres English
+  // reaches the confirm sheet. Throws RepoError('loginRequired') → the
+  // screen shows `auth.loginRequired`. Demo/offline mode skips this.
+  await getWriteOwnerId();
 
   const photo_url = await maybeUploadPhoto(input.photoLocalUri);
 

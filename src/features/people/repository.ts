@@ -1,4 +1,5 @@
-import { newLocalId, readLocalList, toRepoError, writeLocalList } from '@/lib/offline';
+import { newLocalId, readLocalList, RepoError, toRepoError, writeLocalList } from '@/lib/offline';
+import { getWriteOwnerId, isLoginRequiredFailure } from '@/lib/dbErrors';
 import { getSupabase, isSupabaseConfigured } from '@/lib/supabase';
 
 import type { Person, PersonDraft } from './types';
@@ -88,7 +89,10 @@ export async function getPerson(id: string): Promise<Person | null> {
 
 export async function createPerson(draft: PersonDraft): Promise<Person> {
   const cleaned = cleanDraft(draft);
-  const ownerId = await getOwnerId();
+  // Live DB + no session: fail here with a coded error (screens show
+  // `auth.loginRequired`) instead of attempting the remote insert RLS
+  // would reject with raw Postgres English. Demo/offline stays local.
+  const ownerId = await getWriteOwnerId();
   if (ownerId) {
     try {
       const supabase = getSupabase();
@@ -102,7 +106,10 @@ export async function createPerson(draft: PersonDraft): Promise<Person> {
       const cached = await readLocalList<Person>(PEOPLE_CACHE_KEY);
       await writeLocalList(PEOPLE_CACHE_KEY, [row, ...cached.filter((p) => p.id !== row.id)]);
       return row;
-    } catch {
+    } catch (error) {
+      // An RLS denial (e.g. the session died mid-write) is a login problem,
+      // not an offline one — surface it instead of forking a local-only row.
+      if (isLoginRequiredFailure(error)) throw new RepoError('loginRequired');
       // Supabase write failed (usually offline) — keep the person locally so
       // no data is lost; it syncs on the next configured write path.
       return saveLocalPerson(cleaned);
@@ -124,7 +131,9 @@ async function saveLocalPerson(cleaned: ReturnType<typeof cleanDraft>): Promise<
 }
 
 export async function deletePerson(id: string): Promise<void> {
-  const ownerId = await getOwnerId();
+  // Same session gate as createPerson: live DB + no session → coded
+  // `loginRequired` instead of a remote delete RLS would reject.
+  const ownerId = await getWriteOwnerId();
   if (ownerId) {
     try {
       const supabase = getSupabase();

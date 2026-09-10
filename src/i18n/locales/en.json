@@ -21,6 +21,7 @@
   },
   "errors": {
     "offline": "No internet. Your data is safe on this phone — try again when online.",
+    "rateLimited": "Too many tries. Wait a minute and try again.",
     "failed": "Something went wrong. Please try again."
   },
   "tabs": {
@@ -219,7 +220,8 @@
     "errorRateLimited": "Too many codes sent. Wait a minute and try again.",
     "errorNoNetwork": "No internet. Check your connection and try again.",
     "errorGeneric": "Something went wrong. Try again.",
-    "errorNotConfigured": "Login is not set up yet."
+    "errorNotConfigured": "Login is not set up yet.",
+    "loginRequired": "Please log in to save. Open Login and enter your mobile number."
   },
   "validation": {
     "amountRequired": "Please enter an amount.",

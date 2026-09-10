@@ -26,6 +26,7 @@ import { shiftDateKey, todayKey } from '@/features/khata/types';
 import { saveSaleWithKhata } from '@/features/records/saveSale';
 import { tv, validateSaleForm, type SaleFormValues } from '@/features/records/validate';
 import { formatDate } from '@/lib/format';
+import { mapDbErrorToKey } from '@/lib/dbErrors';
 import { useSettingsStore } from '@/store/settings';
 import { colors, radii, spacing, touchTargets, typography } from '@/theme';
 import { validateAmount, validateQuantityKg } from '@/lib/validation';
@@ -164,7 +165,8 @@ export default function NewSaleScreen() {
       setSheetVisible(false);
       router.replace('/records');
     } catch (err) {
-      setSaveError(err instanceof Error ? err.message : String(err));
+      // Never raw Supabase/Postgres English: store the i18n key, render t(key).
+      setSaveError(mapDbErrorToKey(err));
     } finally {
       setSaving(false);
     }
@@ -361,7 +363,7 @@ export default function NewSaleScreen() {
         photoUri={photoUri}
         language={language}
         saving={saving}
-        error={saveError}
+        error={saveError ? t(saveError) : null}
         onCancel={() => (saving ? undefined : setSheetVisible(false))}
         onConfirm={onConfirm}
       />

@@ -12,13 +12,11 @@ import { addEntry, deleteEntry, listEntries, updateEntry } from '@/features/khat
 import type { KhataEntry } from '@/features/khata/types';
 import { listPeople } from '@/features/people/repository';
 import type { Person } from '@/features/people/types';
-import { RepoError } from '@/lib/offline';
+import { mapDbErrorToKey } from '@/lib/dbErrors';
 import { colors, spacing, typography } from '@/theme';
 
 function toErrorKey(error: unknown): LedgerErrorKey {
-  return error instanceof RepoError && error.code === 'offline'
-    ? 'errors.offline'
-    : 'errors.failed';
+  return mapDbErrorToKey(error);
 }
 
 /**

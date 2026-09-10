@@ -1,4 +1,5 @@
-import { newLocalId, readLocalList, toRepoError, writeLocalList } from '@/lib/offline';
+import { newLocalId, readLocalList, RepoError, toRepoError, writeLocalList } from '@/lib/offline';
+import { getWriteOwnerId, isLoginRequiredFailure } from '@/lib/dbErrors';
 import { getSupabase, isSupabaseConfigured } from '@/lib/supabase';
 
 import type { KhataEntry, KhataEntryDraft, KhataEntryUpdate } from './types';
@@ -126,7 +127,9 @@ export async function listAllEntries(): Promise<KhataEntry[]> {
 
 export async function addEntry(draft: KhataEntryDraft): Promise<KhataEntry> {
   const cleaned = cleanDraft(draft);
-  const ownerId = await getOwnerId();
+  // Live DB + no session → coded `loginRequired` (screens show
+  // `auth.loginRequired`), never a remote attempt RLS would reject.
+  const ownerId = await getWriteOwnerId();
   if (ownerId) {
     try {
       const supabase = getSupabase();
@@ -140,7 +143,10 @@ export async function addEntry(draft: KhataEntryDraft): Promise<KhataEntry> {
       const cached = await readLocalList<KhataEntry>(ENTRIES_CACHE_KEY);
       await writeLocalList(ENTRIES_CACHE_KEY, [row, ...cached.filter((e) => e.id !== row.id)]);
       return row;
-    } catch {
+    } catch (error) {
+      // An RLS denial (e.g. the session died mid-write) is a login problem,
+      // not an offline one — surface it instead of forking a local-only row.
+      if (isLoginRequiredFailure(error)) throw new RepoError('loginRequired');
       return saveLocalEntry(cleaned);
     }
   }
@@ -161,7 +167,8 @@ async function saveLocalEntry(cleaned: ReturnType<typeof cleanDraft>): Promise<K
 
 export async function updateEntry(id: string, update: KhataEntryUpdate): Promise<KhataEntry> {
   const cleaned = cleanUpdate(update);
-  const ownerId = await getOwnerId();
+  // Same session gate as addEntry.
+  const ownerId = await getWriteOwnerId();
   if (ownerId) {
     try {
       const supabase = getSupabase();
@@ -179,7 +186,8 @@ export async function updateEntry(id: string, update: KhataEntryUpdate): Promise
         cached.map((e) => (e.id === id ? row : e)),
       );
       return row;
-    } catch {
+    } catch (error) {
+      if (isLoginRequiredFailure(error)) throw new RepoError('loginRequired');
       return updateLocalEntry(id, cleaned);
     }
   }
@@ -202,7 +210,8 @@ async function updateLocalEntry(
 }
 
 export async function deleteEntry(id: string): Promise<void> {
-  const ownerId = await getOwnerId();
+  // Same session gate as addEntry.
+  const ownerId = await getWriteOwnerId();
   if (ownerId) {
     try {
       const supabase = getSupabase();

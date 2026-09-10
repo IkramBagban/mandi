@@ -11,7 +11,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 
 /** Coded repository failure — screens map `code` to `t('errors.<code>')`. */
 export class RepoError extends Error {
-  code: 'offline' | 'notConfigured' | 'failed';
+  code: 'offline' | 'notConfigured' | 'loginRequired' | 'failed';
   constructor(code: RepoError['code'], message?: string) {
     super(message ?? code);
     this.code = code;

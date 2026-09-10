@@ -8,19 +8,18 @@ import { BigButton, EmptyState, Screen } from '@/components';
 import { PersonCard } from '@/features/people/components/PersonCard';
 import { PersonForm } from '@/features/people/components/PersonForm';
 import { PersonSearchBar } from '@/features/people/components/PersonSearchBar';
-import { RepoError } from '@/lib/offline';
+import { mapDbErrorToKey } from '@/lib/dbErrors';
 import { colors, spacing, typography } from '@/theme';
 
 import { createPerson, listPeople } from '@/features/people/repository';
 import { persistPersonPhoto } from '@/features/people/photo';
 import { filterPeople, type Person, type PersonDraft } from '@/features/people/types';
 
-type PeopleErrorKey = 'errors.offline' | 'errors.failed';
+/** Any failure key the central mapper can return (offline, login, generic). */
+type PeopleErrorKey = string;
 
 function toErrorKey(error: unknown): PeopleErrorKey {
-  return error instanceof RepoError && error.code === 'offline'
-    ? 'errors.offline'
-    : 'errors.failed';
+  return mapDbErrorToKey(error);
 }
 
 /**

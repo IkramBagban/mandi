@@ -5,6 +5,7 @@ import { ActivityIndicator, Alert, StyleSheet, Text, View } from 'react-native';
 
 import { BigButton, EmptyState } from '@/components';
 import type { Person } from '@/features/people/types';
+import { mapDbErrorToKey } from '@/lib/dbErrors';
 import { formatDate, formatINR } from '@/lib/format';
 import { useSettingsStore } from '@/store/settings';
 import { colors, spacing, typography } from '@/theme';
@@ -16,7 +17,8 @@ import { BalanceHeader } from './BalanceHeader';
 import { EntryForm, type EntryFormValue } from './EntryForm';
 import { EntryRow } from './EntryRow';
 
-export type LedgerErrorKey = 'errors.offline' | 'errors.failed';
+/** Any failure key the central mapper can return (offline, login, generic). */
+export type LedgerErrorKey = string;
 
 interface KhataLedgerProps {
   person: Person;
@@ -89,8 +91,8 @@ export function KhataLedger({
     try {
       await onAddEntry(value);
       setShowForm(false);
-    } catch {
-      Alert.alert(t('khata.addEntryTitle'), t('errors.failed'));
+    } catch (error) {
+      Alert.alert(t('khata.addEntryTitle'), t(mapDbErrorToKey(error)));
     }
   }
 
@@ -99,8 +101,8 @@ export function KhataLedger({
     try {
       await onUpdateEntry(editing.id, value);
       setEditing(null);
-    } catch {
-      Alert.alert(t('khata.editEntryTitle'), t('errors.failed'));
+    } catch (error) {
+      Alert.alert(t('khata.editEntryTitle'), t(mapDbErrorToKey(error)));
     }
   }
 
@@ -111,8 +113,8 @@ export function KhataLedger({
         text: t('common.delete'),
         style: 'destructive',
         onPress: () => {
-          void onDeleteEntry(entry.id).catch(() => {
-            Alert.alert(t('khata.deleteEntryTitle'), t('errors.failed'));
+          void onDeleteEntry(entry.id).catch((error: unknown) => {
+            Alert.alert(t('khata.deleteEntryTitle'), t(mapDbErrorToKey(error)));
           });
         },
       },

@@ -18,13 +18,11 @@ import { callPerson, shareKhataOnWhatsApp } from '@/features/khata/share';
 import type { KhataEntry } from '@/features/khata/types';
 import { deletePerson, getPerson } from '@/features/people/repository';
 import type { Person } from '@/features/people/types';
-import { RepoError } from '@/lib/offline';
+import { mapDbErrorToKey } from '@/lib/dbErrors';
 import { colors, radii, spacing, touchTargets, typography } from '@/theme';
 
 function toErrorKey(error: unknown): LedgerErrorKey {
-  return error instanceof RepoError && error.code === 'offline'
-    ? 'errors.offline'
-    : 'errors.failed';
+  return mapDbErrorToKey(error);
 }
 
 /**
@@ -131,8 +129,8 @@ export default function PersonDetailScreen() {
             await deletePerson(personId);
             await deleteEntriesForPerson(personId);
             router.replace('/people');
-          }).catch(() => {
-            Alert.alert(t('people.deletePersonTitle'), t('errors.failed'));
+          }).catch((error: unknown) => {
+            Alert.alert(t('people.deletePersonTitle'), t(mapDbErrorToKey(error)));
           });
         },
       },

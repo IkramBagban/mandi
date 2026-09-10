@@ -1,4 +1,5 @@
-import { newLocalId, readLocalList, toRepoError, writeLocalList } from '@/lib/offline';
+import { newLocalId, readLocalList, RepoError, toRepoError, writeLocalList } from '@/lib/offline';
+import { getWriteOwnerId, isLoginRequiredFailure } from '@/lib/dbErrors';
 import { getSupabase, isSupabaseConfigured } from '@/lib/supabase';
 
 import type { SaleExpenses, SaleRecord, SaleDraft } from './types';
@@ -117,7 +118,9 @@ export async function addSale(draft: SaleDraft): Promise<SaleRecord> {
   const cleaned = cleanDraft(draft);
   const total = computeTotal(cleaned.qty_kg, cleaned.rate_per_kg);
   const net = computeNet(total, draft.expenses);
-  const ownerId = await getOwnerId();
+  // Live DB + no session → coded `loginRequired` (screens show
+  // `auth.loginRequired`), never a remote attempt RLS would reject.
+  const ownerId = await getWriteOwnerId();
   if (ownerId) {
     try {
       const supabase = getSupabase();
@@ -131,7 +134,10 @@ export async function addSale(draft: SaleDraft): Promise<SaleRecord> {
       const cached = await readLocalList<SaleRecord>(SALES_CACHE_KEY);
       await writeLocalList(SALES_CACHE_KEY, [row, ...cached.filter((s) => s.id !== row.id)]);
       return row;
-    } catch {
+    } catch (error) {
+      // An RLS denial (e.g. the session died mid-write) is a login problem,
+      // not an offline one — surface it instead of forking a local-only row.
+      if (isLoginRequiredFailure(error)) throw new RepoError('loginRequired');
       // Supabase write failed (usually offline) — keep locally, same as khata.
       return saveLocalSale(cleaned, total, draft.expenses, net);
     }
@@ -160,7 +166,8 @@ async function saveLocalSale(
 }
 
 export async function deleteSale(id: string): Promise<void> {
-  const ownerId = await getOwnerId();
+  // Same session gate as addSale.
+  const ownerId = await getWriteOwnerId();
   if (ownerId) {
     try {
       const supabase = getSupabase();
