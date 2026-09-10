@@ -1,0 +1,87 @@
+name: EAS builds
+
+# On-demand preview APKs + production builds on version tags.
+# Convention copied from the sibling repos (yaadora, snap-mind):
+# expo/expo-github-action + EXPO_TOKEN, lint/typecheck gate before building.
+# Differences (documented in README): mandi is npm (not bun/pnpm), and tag
+# pushes build the production profile instead of a staging-branch push.
+
+on:
+  workflow_dispatch:
+    inputs:
+      profile:
+        description: 'EAS build profile'
+        required: true
+        default: preview
+        type: choice
+        options: [preview, development, production]
+      platform:
+        description: 'Target platform'
+        required: true
+        default: android
+        type: choice
+        options: [android, ios, all]
+  push:
+    tags:
+      - 'v*'
+
+jobs:
+  eas-build:
+    name: EAS build
+    runs-on: ubuntu-latest
+    env:
+      EXPO_TOKEN: ${{ secrets.EXPO_TOKEN }}
+      EXPO_PUBLIC_SUPABASE_URL: ${{ secrets.EXPO_PUBLIC_SUPABASE_URL }}
+      EXPO_PUBLIC_SUPABASE_ANON_KEY: ${{ secrets.EXPO_PUBLIC_SUPABASE_ANON_KEY }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Resolve profile and platform
+        id: cfg
+        run: |
+          if [ "${{ github.event_name }}" = "push" ]; then
+            echo "profile=production" >> "$GITHUB_OUTPUT"
+            echo "platform=android" >> "$GITHUB_OUTPUT"
+          else
+            echo "profile=${{ inputs.profile }}" >> "$GITHUB_OUTPUT"
+            echo "platform=${{ inputs.platform }}" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          # Node 22: eas-cli >= 24 requires node >= 22 (oclif engines).
+          node-version: 22
+          cache: npm
+
+      - name: Setup Expo and EAS
+        uses: expo/expo-github-action@v8
+        with:
+          eas-version: latest
+          packager: npm
+          token: ${{ secrets.EXPO_TOKEN }}
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Lint + typecheck gate
+        run: npm run lint && npm run typecheck
+
+      - name: Inject public env into eas.json (CI only, never committed)
+        # Same jq pattern as the yaadora sibling repo: public build-time vars
+        # are baked into the selected profile so the remote EAS builder
+        # receives them. Unset secrets inject empty strings, which the app
+        # treats as "not configured" (offline stubs) — see src/lib/supabase.ts.
+        run: |
+          jq --arg profile '${{ steps.cfg.outputs.profile }}' \
+             --arg url "$EXPO_PUBLIC_SUPABASE_URL" \
+             --arg key "$EXPO_PUBLIC_SUPABASE_ANON_KEY" \
+             '.build[$profile].env = {
+                "EXPO_PUBLIC_SUPABASE_URL": $url,
+                "EXPO_PUBLIC_SUPABASE_ANON_KEY": $key
+              }' eas.json > eas.json.tmp && mv eas.json.tmp eas.json
+
+      - name: EAS build (${{ steps.cfg.outputs.profile }} / ${{ steps.cfg.outputs.platform }})
+        run: eas build --platform ${{ steps.cfg.outputs.platform }} --profile ${{ steps.cfg.outputs.profile }} --non-interactive
