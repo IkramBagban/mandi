@@ -16,9 +16,26 @@ export type OtpChannel = 'whatsapp' | 'sms';
 /** Preferred channel order: WhatsApp first, SMS fallback. */
 export const OTP_CHANNEL_ORDER: readonly OtpChannel[] = ['whatsapp', 'sms'];
 
+/** OTP codes are always 6 digits. */
+export const OTP_LENGTH = 6;
+
+/** Seconds before the verify screen offers a resend. */
+export const RESEND_COOLDOWN_SECONDS = 30;
+
+/**
+ * Wrong-code tries before the verify screen pushes the user to request a
+ * fresh code instead of guessing further (no lockout — resend resets it).
+ */
+export const MAX_VERIFY_ATTEMPTS = 5;
+
 export interface RequestOtpInput {
   /** Canonical 10-digit Indian mobile (see `validateIndianPhone`). */
   phone: string;
+  /**
+   * Pin to one channel (resend on the channel that worked). Omit to try
+   * WhatsApp first with SMS fallback (`OTP_CHANNEL_ORDER`).
+   */
+  channel?: OtpChannel;
 }
 
 export interface VerifyOtpInput {

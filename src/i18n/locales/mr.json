@@ -184,7 +184,11 @@
     "restartNote": "उर्दूवर बदलल्यास किंवा काढल्यास अ‍ॅप एकदा बंद करून उघडा म्हणजे मांडणी बरोबर दिसेल.",
     "about": "मंडी बद्दल",
     "aboutBody": "मंडी व्यापारी आणि शेतकऱ्यांसाठी सोपे खाते आणि विक्री नोंदी.",
-    "version": "आवृत्ती"
+    "version": "आवृत्ती",
+    "account": "खाते",
+    "signedInAs": "{{phone}} ने लॉगिन",
+    "notLoggedIn": "लॉगिन नाही",
+    "logout": "लॉग आउट"
   },
   "languages": {
     "en": "English",
@@ -198,12 +202,24 @@
     "phoneLabel": "मोबाईल नंबर",
     "phonePlaceholder": "10 अंकी मोबाईल",
     "sendCode": "कोड पाठवा",
+    "sendingCode": "पाठवत आहे…",
     "codeLabel": "6 अंकी कोड",
+    "codeSentTo": "{{phone}} वर कोड पाठवला",
     "verify": "तपासा",
-    "resend": "कोड पुन्हा पाठवा",
+    "verifying": "तपासत आहे…",
+    "resend": "नवीन कोड पाठवा",
+    "resendIn": "{{seconds}} सेकंदांत नवीन कोड",
+    "changeNumber": "नंबर बदला",
+    "attemptsLeft": "{{count}} संधी उरल्या",
     "sentViaWhatsapp": "कोड WhatsApp वर पाठवला",
     "sentViaSms": "कोड SMS ने पाठवला",
-    "channelNote": "आधी WhatsApp, मग SMS वर प्रयत्न करतो."
+    "channelNote": "आधी WhatsApp, मग SMS वर प्रयत्न करतो.",
+    "errorCodeInvalid": "चुकीचा किंवा जुना कोड. बघून पुन्हा लिहा किंवा नवीन कोड मागवा.",
+    "errorMaxAttempts": "खूप प्रयत्न झाले. नवीन कोड मागवून पुन्हा प्रयत्न करा.",
+    "errorRateLimited": "खूप कोड पाठवले. एक मिनिट थांबून पुन्हा प्रयत्न करा.",
+    "errorNoNetwork": "इंटरनेट नाही. कनेक्शन बघून पुन्हा प्रयत्न करा.",
+    "errorGeneric": "काहीतरी चुकलं. पुन्हा प्रयत्न करा.",
+    "errorNotConfigured": "लॉगिन अजून चालू नाही."
   },
   "validation": {
     "amountRequired": "कृपया रक्कम लिहा.",

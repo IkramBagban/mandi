@@ -4,21 +4,25 @@ import { useTranslation } from 'react-i18next';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 
 import appJson from '../../app.json';
-import { Screen } from '@/components';
+import { BigButton, Screen, ScreenSpacer } from '@/components';
+import { formatIndianPhoneDisplay, useAuth } from '@/features/auth';
 import { changeAppLanguage, isRtlLanguage, SUPPORTED_LANGUAGES } from '@/i18n';
 import type { AppLanguage } from '@/i18n';
 import { useSettingsStore } from '@/store/settings';
 import { colors, radii, spacing, touchTargets, typography } from '@/theme';
 
 /**
- * Settings shell: language switcher (the only setting that matters yet).
+ * Settings shell: account (logout), language switcher, about.
  * Switching to/from Urdu flips the whole layout to RTL after one restart.
  */
 export default function SettingsScreen() {
   const { t } = useTranslation();
   const language = useSettingsStore((s) => s.language);
   const setLanguage = useSettingsStore((s) => s.setLanguage);
+  const { configured, user, signOut } = useAuth();
   const [switching, setSwitching] = useState<AppLanguage | null>(null);
+  const [loggingOut, setLoggingOut] = useState(false);
+  const [logoutError, setLogoutError] = useState(false);
 
   const select = async (next: AppLanguage) => {
     if (next === language || switching) return;
@@ -27,6 +31,19 @@ export default function SettingsScreen() {
       await changeAppLanguage(next, setLanguage);
     } finally {
       setSwitching(null);
+    }
+  };
+
+  const logout = async () => {
+    if (loggingOut) return;
+    setLoggingOut(true);
+    setLogoutError(false);
+    try {
+      await signOut();
+    } catch {
+      setLogoutError(true);
+    } finally {
+      setLoggingOut(false);
     }
   };
 
@@ -72,6 +89,35 @@ export default function SettingsScreen() {
         })}
       </View>
       <Text style={styles.note}>{t('settings.restartNote')}</Text>
+
+      {configured ? (
+        <>
+          <Text style={styles.sectionLabel}>{t('settings.account')}</Text>
+          <View style={styles.card}>
+            <Text style={styles.body}>
+              {user?.phone
+                ? t('settings.signedInAs', {
+                    phone: formatIndianPhoneDisplay(user.phone),
+                  })
+                : t('settings.notLoggedIn')}
+            </Text>
+          </View>
+          {user ? (
+            <>
+              <BigButton
+                label={t('settings.logout')}
+                icon="logout"
+                variant="danger"
+                onPress={() => void logout()}
+                disabled={loggingOut}
+                testID="settings-logout"
+              />
+              {logoutError ? <Text style={styles.error}>{t('auth.errorGeneric')}</Text> : null}
+            </>
+          ) : null}
+          <ScreenSpacer />
+        </>
+      ) : null}
 
       <Text style={styles.sectionLabel}>{t('settings.about')}</Text>
       <View style={styles.card}>
@@ -132,6 +178,10 @@ const styles = StyleSheet.create({
   note: {
     ...typography.caption,
     color: colors.textMuted,
+  },
+  error: {
+    ...typography.body,
+    color: colors.danger,
   },
   body: {
     ...typography.body,

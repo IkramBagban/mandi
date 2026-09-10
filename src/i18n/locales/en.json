@@ -184,7 +184,11 @@
     "restartNote": "If you change to or from Urdu, restart the app once so the layout flips correctly.",
     "about": "About Mandi",
     "aboutBody": "Simple khata and sale records for mandi traders and farmers.",
-    "version": "Version"
+    "version": "Version",
+    "account": "Account",
+    "signedInAs": "Logged in as {{phone}}",
+    "notLoggedIn": "Not logged in",
+    "logout": "Log out"
   },
   "languages": {
     "en": "English",
@@ -198,12 +202,24 @@
     "phoneLabel": "Mobile number",
     "phonePlaceholder": "10-digit mobile",
     "sendCode": "Send code",
+    "sendingCode": "Sending…",
     "codeLabel": "6-digit code",
+    "codeSentTo": "Code sent to {{phone}}",
     "verify": "Verify",
-    "resend": "Resend code",
+    "verifying": "Checking…",
+    "resend": "Send a new code",
+    "resendIn": "New code in {{seconds}}s",
+    "changeNumber": "Change number",
+    "attemptsLeft": "{{count}} tries left",
     "sentViaWhatsapp": "Code sent on WhatsApp",
     "sentViaSms": "Code sent by SMS",
-    "channelNote": "We try WhatsApp first, then SMS."
+    "channelNote": "We try WhatsApp first, then SMS.",
+    "errorCodeInvalid": "Wrong or old code. Check and try again, or send a new code.",
+    "errorMaxAttempts": "Too many tries. Send a new code and try again.",
+    "errorRateLimited": "Too many codes sent. Wait a minute and try again.",
+    "errorNoNetwork": "No internet. Check your connection and try again.",
+    "errorGeneric": "Something went wrong. Try again.",
+    "errorNotConfigured": "Login is not set up yet."
   },
   "validation": {
     "amountRequired": "Please enter an amount.",

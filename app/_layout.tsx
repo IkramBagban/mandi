@@ -1,10 +1,11 @@
 import { useEffect, useState } from 'react';
-import { Stack } from 'expo-router';
+import { router, Stack, useSegments } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
 import { StatusBar } from 'expo-status-bar';
 import { I18nextProvider } from 'react-i18next';
 
 import i18n, { applyRtl, initI18n } from '@/i18n';
+import { AuthProvider, useAuth } from '@/features/auth';
 import { bootstrapLocale, useSettingsStore } from '@/store/settings';
 
 void SplashScreen.preventAutoHideAsync();
@@ -12,10 +13,11 @@ void SplashScreen.preventAutoHideAsync();
 /**
  * Boot order matters: stored/device language → RTL flags → i18n → UI.
  * RTL flags must land before the first render (esp. for Urdu), so we hold
- * the splash screen until locale bootstrap finishes.
+ * the splash screen until locale bootstrap AND the persisted session check
+ * finish — logged-out users must never glimpse the tabs.
  */
 export default function RootLayout() {
-  const [ready, setReady] = useState(false);
+  const [localeReady, setLocaleReady] = useState(false);
 
   useEffect(() => {
     let cancelled = false;
@@ -32,10 +34,7 @@ export default function RootLayout() {
         applyRtl('hi');
         await initI18n('hi');
       } finally {
-        if (!cancelled) {
-          setReady(true);
-          await SplashScreen.hideAsync();
-        }
+        if (!cancelled) setLocaleReady(true);
       }
     })();
     return () => {
@@ -43,16 +42,50 @@ export default function RootLayout() {
     };
   }, []);
 
-  if (!ready) return null;
+  if (!localeReady) return null;
 
   return (
     <I18nextProvider i18n={i18n}>
       <StatusBar style="auto" />
-      <Stack screenOptions={{ headerShown: false }}>
-        <Stack.Screen name="(tabs)" />
-        <Stack.Screen name="person/[id]" />
-        <Stack.Screen name="record/new" />
-      </Stack>
+      <AuthProvider>
+        <GatedStack />
+      </AuthProvider>
     </I18nextProvider>
+  );
+}
+
+/**
+ * Route gate: logged-out users see the auth stack only; signed-in users are
+ * kept out of it. When Supabase isn't configured (UI-stub mode) the gate
+ * stays open so the tabs remain explorable without a project.
+ */
+function GatedStack() {
+  const { ready, configured, user } = useAuth();
+  const segments = useSegments();
+
+  useEffect(() => {
+    if (!ready) return;
+    void SplashScreen.hideAsync();
+  }, [ready]);
+
+  useEffect(() => {
+    if (!ready || !configured) return;
+    const inAuth = segments[0] === '(auth)';
+    if (!user && !inAuth) {
+      router.replace('/(auth)');
+    } else if (user && inAuth) {
+      router.replace('/(tabs)');
+    }
+  }, [ready, configured, user, segments]);
+
+  if (!ready) return null;
+
+  return (
+    <Stack screenOptions={{ headerShown: false }}>
+      <Stack.Screen name="(auth)" />
+      <Stack.Screen name="(tabs)" />
+      <Stack.Screen name="person/[id]" />
+      <Stack.Screen name="record/new" />
+    </Stack>
   );
 }
