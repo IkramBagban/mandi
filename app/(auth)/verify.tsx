@@ -13,7 +13,7 @@ import {
   RESEND_COOLDOWN_SECONDS,
   verifyOtp,
 } from '@/features/auth';
-import type { OtpChannel } from '@/features/auth';
+import type { OtpChannel, VerifyPurpose } from '@/features/auth';
 import { OtpInput } from '@/features/auth/OtpInput';
 import { colors, spacing, touchTargets, typography } from '@/theme';
 
@@ -21,16 +21,25 @@ function isOtpChannel(value: string | undefined): value is OtpChannel {
   return value === 'whatsapp' || value === 'sms';
 }
 
+function isVerifyPurpose(value: string | undefined): value is VerifyPurpose {
+  return value === 'login' || value === 'signup' || value === 'recovery';
+}
+
 /**
  * Step 2 — 6-digit code. Boxes auto-advance and verify the moment the last
  * digit lands; resend is one big thumb target with a 30s countdown so users
  * never hammer the SMS gateway. After `MAX_VERIFY_ATTEMPTS` wrong codes the
  * screen stops guessing and pushes a fresh code instead (no lockout).
+ *
+ * Where success goes depends on `purpose`: plain login lands in the tabs,
+ * while signup/recovery continue to set-password (the OTP session they just
+ * earned authorises the password write, so no second code is ever needed).
  */
 export default function VerifyScreen() {
   const { t } = useTranslation();
-  const params = useLocalSearchParams<{ phone?: string; channel?: string }>();
+  const params = useLocalSearchParams<{ phone?: string; channel?: string; purpose?: string }>();
   const phone = typeof params.phone === 'string' ? params.phone : '';
+  const purpose: VerifyPurpose = isVerifyPurpose(params.purpose) ? params.purpose : 'login';
   const [channel, setChannel] = useState<OtpChannel>(
     isOtpChannel(params.channel) ? params.channel : 'sms',
   );
@@ -61,7 +70,14 @@ export default function VerifyScreen() {
     setErrorKey(null);
     try {
       await verifyOtp({ phone, code: candidate });
-      router.replace('/(tabs)');
+      if (purpose === 'login') {
+        router.replace('/(tabs)');
+      } else {
+        router.replace({
+          pathname: '/(auth)/password',
+          params: { mode: purpose, phone },
+        });
+      }
     } catch (error) {
       const key = mapAuthErrorToKey(error);
       if (key === 'auth.errorCodeInvalid') {

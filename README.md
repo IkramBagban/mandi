@@ -181,11 +181,15 @@ tests/
 - **Supabase: schema file + typed client + stubs.** No live project required.
   RLS-first: every table forces `owner_id = auth.uid()`; the app uses the anon
   key only. Regenerate `database.types.ts` via `supabase gen types` once linked.
-- **Auth: phone OTP only, WhatsApp-first.** Login uses `signInWithOtp({ phone })`
-  with channel order WhatsApp → SMS (see `src/features/auth/`). Delivery is
-  server-side through a Supabase **Send SMS Hook**
+- **Auth: phone+password primary, OTP secondary.** Login offers password
+  first (phone + password via `signInWithPassword` — zero SMS) with the OTP
+  flow on a second tab. Signup is phone → one OTP (confirms the number,
+  creates the account if new) → set password; forgot-password is phone →
+  OTP → new password (both via `updateUser` on the OTP session, see
+  `src/features/auth/`). Password rule is minimal: 6+ characters, numeric
+  PIN allowed. Delivery is server-side through a Supabase **Send SMS Hook**
   (`supabase/functions/send-sms-hook/`) that tries WhatsApp first and falls
-  back to **MSG91 SMS** (`src/lib/sms.ts` provider contract). MSG91 keys live
+  back to **MSG91 SMS** (`src/lib/sms` provider contract). MSG91 keys live
   in Edge Function secrets — never in the app.
 - **Photos: compress on-device first** (`expo-image-manipulator` current
   contextual API — `manipulate().resize().renderAsync()`), max 1024px / JPEG
@@ -226,14 +230,14 @@ tests/
 
 ## Stubs for the next workers
 
-| Area     | Stub location                                            | Build next                                                                                                        |
-| -------- | -------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------- |
-| People   | `app/(tabs)/people.tsx`, `features/people`               | ✅ Done (this branch) — photo list + search + add-person                                                          |
-| Khata    | `app/(tabs)/khata.tsx`, `features/khata`                 | ✅ Done (this branch) — picker → balance → entries → share                                                        |
-| Sales    | `app/(tabs)/records.tsx`, `features/records`             | Wizard: commodity → weight → rate → expenses → photo → net                                                        |
-| Auth OTP | `features/auth`, `lib/sms.ts`, `functions/send-sms-hook` | ✅ Built: phone → code screens, session gate, providers + hook. Remaining: deploy hook, set secrets, test numbers |
-| WhatsApp | `features/khata/share.ts` (+ `KhataLedger` share button) | ✅ Khata summary share done — more share surfaces later                                                           |
-| Photos   | `lib/upload.ts` + `features/people/photo.ts`             | ✅ Person photos wired — signed URLs + record photos later                                                        |
+| Area     | Stub location                                            | Build next                                                                                                                                            |
+| -------- | -------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------- |
+| People   | `app/(tabs)/people.tsx`, `features/people`               | ✅ Done (this branch) — photo list + search + add-person                                                                                              |
+| Khata    | `app/(tabs)/khata.tsx`, `features/khata`                 | ✅ Done (this branch) — picker → balance → entries → share                                                                                            |
+| Sales    | `app/(tabs)/records.tsx`, `features/records`             | Wizard: commodity → weight → rate → expenses → photo → net                                                                                            |
+| Auth OTP | `features/auth`, `lib/sms.ts`, `functions/send-sms-hook` | ✅ Built: password-primary login tabs, signup + forgot via one OTP, session gate, providers + hook. Remaining: deploy hook, set secrets, test numbers |
+| WhatsApp | `features/khata/share.ts` (+ `KhataLedger` share button) | ✅ Khata summary share done — more share surfaces later                                                                                               |
+| Photos   | `lib/upload.ts` + `features/people/photo.ts`             | ✅ Person photos wired — signed URLs + record photos later                                                                                            |
 
 ## Sale records + Udhaari dashboard
 

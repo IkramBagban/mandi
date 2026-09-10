@@ -58,6 +58,9 @@ export default function RootLayout() {
  * Route gate: logged-out users see the auth stack only; signed-in users are
  * kept out of it. When Supabase isn't configured (UI-stub mode) the gate
  * stays open so the tabs remain explorable without a project.
+ *
+ * One exception: set-password NEEDS the fresh OTP-verify session (signup
+ * and recovery land there signed-in), so signed-in users may stay on it.
  */
 function GatedStack() {
   const { ready, configured, user } = useAuth();
@@ -71,9 +74,10 @@ function GatedStack() {
   useEffect(() => {
     if (!ready || !configured) return;
     const inAuth = segments[0] === '(auth)';
+    const settingPassword = inAuth && segments.includes('password');
     if (!user && !inAuth) {
       router.replace('/(auth)');
-    } else if (user && inAuth) {
+    } else if (user && inAuth && !settingPassword) {
       router.replace('/(tabs)');
     }
   }, [ready, configured, user, segments]);

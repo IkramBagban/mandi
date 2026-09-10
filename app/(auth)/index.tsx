@@ -1,44 +1,34 @@
 import { router } from 'expo-router';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { StyleSheet, Text, TextInput, View } from 'react-native';
+import { Pressable, StyleSheet, Text, View } from 'react-native';
 
 import { BigButton, Screen, ScreenSpacer } from '@/components';
-import { mapAuthErrorToKey, requestOtp } from '@/features/auth';
-import { normalizeDigits, validateIndianPhone } from '@/lib/validation';
+import {
+  mapAuthErrorToKey,
+  PasswordInput,
+  PhoneEntry,
+  PhoneField,
+  signInWithPassword,
+  validatePassword,
+} from '@/features/auth';
+import { validateIndianPhone } from '@/lib/validation';
 import { colors, radii, spacing, touchTargets, typography } from '@/theme';
 
-const MAX_PHONE_CHARS = 13;
+type LoginTab = 'password' | 'otp';
 
 /**
- * Step 1 — phone number. "+91" is fixed (Indian traders only); the user types
- * just 10 huge digits. Validation reuses the shared `validateIndianPhone`
- * (accepts Devanagari/Arabic-Indic digits, stray spaces, +91, leading 0).
+ * Login — password FIRST (zero SMS), OTP second.
+ *
+ * Two big tabs, one primary action each: phone + password → `Log in`
+ * (`signInWithPassword`), or phone → code on the OTP tab (the old flow,
+ * unchanged). New users go to `Create account`, locked-out users to
+ * `Forgot password?` — both verify the number by OTP first, then set a
+ * password, so the account ends up phone+password either way.
  */
-export default function PhoneScreen() {
+export default function LoginScreen() {
   const { t } = useTranslation();
-  const [raw, setRaw] = useState('');
-  const [touched, setTouched] = useState(false);
-  const [sending, setSending] = useState(false);
-  const [sendError, setSendError] = useState<string | null>(null);
-
-  const phone = validateIndianPhone(raw);
-  const fieldError = touched && !phone.ok ? t(phone.errorKey) : sendError ? t(sendError) : null;
-
-  const send = async () => {
-    setTouched(true);
-    if (!phone.ok || sending) return;
-    setSending(true);
-    setSendError(null);
-    try {
-      const { channel } = await requestOtp({ phone: phone.value });
-      router.push({ pathname: '/(auth)/verify', params: { phone: phone.value, channel } });
-    } catch (error) {
-      setSendError(mapAuthErrorToKey(error));
-    } finally {
-      setSending(false);
-    }
-  };
+  const [tab, setTab] = useState<LoginTab>('password');
 
   return (
     <Screen>
@@ -47,41 +37,132 @@ export default function PhoneScreen() {
         <Text style={styles.subtitle}>{t('auth.subtitle')}</Text>
       </View>
 
-      <Text style={styles.label}>{t('auth.phoneLabel')}</Text>
-      <View style={[styles.row, fieldError ? styles.rowError : null]}>
-        <Text style={styles.prefix}>+91</Text>
-        <TextInput
-          value={raw}
-          onChangeText={(text) => {
-            setRaw(normalizeDigits(text).replace(/[^\d]/g, '').slice(0, MAX_PHONE_CHARS));
-            if (sendError) setSendError(null);
-          }}
-          keyboardType="number-pad"
-          textContentType="telephoneNumber"
-          autoComplete="tel"
-          maxLength={MAX_PHONE_CHARS}
-          autoFocus
-          returnKeyType="done"
-          onSubmitEditing={() => void send()}
-          placeholder={t('auth.phonePlaceholder')}
-          placeholderTextColor={colors.disabled}
-          accessibilityLabel={t('auth.phoneLabel')}
-          testID="auth-phone-input"
-          style={styles.input}
-        />
+      <View style={styles.tabs} accessibilityRole="tablist">
+        <Pressable
+          onPress={() => setTab('password')}
+          accessibilityRole="tab"
+          accessibilityState={{ selected: tab === 'password' }}
+          accessibilityLabel={t('auth.passwordTab')}
+          testID="auth-tab-password"
+          style={({ pressed }) => [
+            styles.tab,
+            tab === 'password' && styles.tabActive,
+            pressed && styles.pressed,
+          ]}
+        >
+          <Text style={[styles.tabLabel, tab === 'password' && styles.tabLabelActive]}>
+            {t('auth.passwordTab')}
+          </Text>
+        </Pressable>
+        <Pressable
+          onPress={() => setTab('otp')}
+          accessibilityRole="tab"
+          accessibilityState={{ selected: tab === 'otp' }}
+          accessibilityLabel={t('auth.otpTab')}
+          testID="auth-tab-otp"
+          style={({ pressed }) => [
+            styles.tab,
+            tab === 'otp' && styles.tabActive,
+            pressed && styles.pressed,
+          ]}
+        >
+          <Text style={[styles.tabLabel, tab === 'otp' && styles.tabLabelActive]}>
+            {t('auth.otpTab')}
+          </Text>
+        </Pressable>
       </View>
-      {fieldError ? <Text style={styles.error}>{fieldError}</Text> : null}
+
+      {tab === 'password' ? (
+        <PasswordTab />
+      ) : (
+        <PhoneEntry purpose="login" testIDPrefix="auth-otp" />
+      )}
 
       <ScreenSpacer size={spacing.sm} />
-      <BigButton
-        label={sending ? t('auth.sendingCode') : t('auth.sendCode')}
-        icon="sms"
-        onPress={() => void send()}
-        disabled={sending}
-        testID="auth-send-code"
-      />
-      <Text style={styles.note}>{t('auth.channelNote')}</Text>
+      <Pressable
+        onPress={() => router.push('/(auth)/signup')}
+        accessibilityRole="button"
+        accessibilityLabel={t('auth.createAccount')}
+        testID="auth-goto-signup"
+        style={({ pressed }) => [styles.link, pressed && styles.pressed]}
+      >
+        <Text style={styles.linkLabel}>{t('auth.createAccount')}</Text>
+      </Pressable>
+      {tab === 'password' ? (
+        <Pressable
+          onPress={() => router.push('/(auth)/forgot')}
+          accessibilityRole="button"
+          accessibilityLabel={t('auth.forgotPassword')}
+          testID="auth-goto-forgot"
+          style={({ pressed }) => [styles.link, pressed && styles.pressed]}
+        >
+          <Text style={styles.linkLabel}>{t('auth.forgotPassword')}</Text>
+        </Pressable>
+      ) : null}
     </Screen>
+  );
+}
+
+function PasswordTab() {
+  const { t } = useTranslation();
+  const [phoneRaw, setPhoneRaw] = useState('');
+  const [password, setPassword] = useState('');
+  const [touched, setTouched] = useState(false);
+  const [loggingIn, setLoggingIn] = useState(false);
+  const [loginError, setLoginError] = useState<string | null>(null);
+
+  const phone = validateIndianPhone(phoneRaw);
+  const passwordCheck = validatePassword(password);
+  const phoneError = touched && !phone.ok ? t(phone.errorKey) : null;
+  const passwordError =
+    (touched && !passwordCheck.ok ? t(passwordCheck.errorKey) : null) ??
+    (loginError ? t(loginError) : null);
+
+  const login = async () => {
+    setTouched(true);
+    if (!phone.ok || !passwordCheck.ok || loggingIn) return;
+    setLoggingIn(true);
+    setLoginError(null);
+    try {
+      await signInWithPassword({ phone: phone.value, password: passwordCheck.value });
+      router.replace('/(tabs)');
+    } catch (error) {
+      setLoginError(mapAuthErrorToKey(error));
+    } finally {
+      setLoggingIn(false);
+    }
+  };
+
+  return (
+    <View style={styles.tabBody}>
+      <PhoneField
+        value={phoneRaw}
+        onChange={(text) => {
+          setPhoneRaw(text);
+          if (loginError) setLoginError(null);
+        }}
+        error={phoneError}
+        autoFocus
+        testID="auth-login-phone-input"
+      />
+      <PasswordInput
+        value={password}
+        onChange={(text) => {
+          setPassword(text);
+          if (loginError) setLoginError(null);
+        }}
+        error={passwordError}
+        testID="auth-login-password"
+      />
+      <ScreenSpacer size={spacing.sm} />
+      <BigButton
+        label={loggingIn ? t('auth.loginSubmitting') : t('auth.loginSubmit')}
+        icon="lock"
+        onPress={() => void login()}
+        disabled={loggingIn}
+        testID="auth-login-submit"
+      />
+    </View>
   );
 }
 
@@ -98,42 +179,45 @@ const styles = StyleSheet.create({
     ...typography.body,
     color: colors.textMuted,
   },
-  label: {
-    ...typography.bodyBold,
-    color: colors.text,
-  },
-  row: {
+  tabs: {
     flexDirection: 'row',
-    alignItems: 'center',
     gap: spacing.sm,
+  },
+  tab: {
+    flex: 1,
     minHeight: touchTargets.primary,
+    alignItems: 'center',
+    justifyContent: 'center',
     borderWidth: 2,
     borderColor: colors.border,
     borderRadius: radii.md,
-    paddingHorizontal: spacing.md,
     backgroundColor: colors.card,
   },
-  rowError: {
-    borderColor: colors.danger,
+  tabActive: {
+    borderColor: colors.primary,
+    backgroundColor: colors.primarySoft,
   },
-  prefix: {
-    ...typography.amount,
+  tabLabel: {
+    ...typography.bodyBold,
     color: colors.textMuted,
   },
-  input: {
-    flex: 1,
-    ...typography.amount,
-    color: colors.text,
-    paddingVertical: spacing.sm,
-    fontVariant: ['tabular-nums'],
+  tabLabelActive: {
+    color: colors.primary,
   },
-  error: {
-    ...typography.body,
-    color: colors.danger,
+  pressed: {
+    opacity: 0.7,
   },
-  note: {
-    ...typography.caption,
-    color: colors.textMuted,
-    textAlign: 'center',
+  tabBody: {
+    gap: spacing.xs,
+  },
+  link: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    minHeight: touchTargets.minimum,
+  },
+  linkLabel: {
+    ...typography.bodyBold,
+    color: colors.primaryDark,
+    textDecorationLine: 'underline',
   },
 });

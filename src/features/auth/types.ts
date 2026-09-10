@@ -1,14 +1,19 @@
 /**
- * Auth domain — PHONE OTP ONLY (locked decision).
+ * Auth domain — PASSWORD PRIMARY, OTP SECONDARY (locked decision).
  *
- * There is no password, no email login. Sign-in is:
- *   1. user enters their 10-digit mobile number (`requestOtp`)
- *   2. they receive a 6-digit code and type it (`verifyOtp`)
+ * Phone+password costs zero SMS, so it is the default path:
+ *   1. new user enters their 10-digit mobile (`signup` screen)
+ *   2. one OTP confirms the number really is theirs (`verify`, once)
+ *   3. they set a password (`password` screen) — the account is now a
+ *      phone+password account, used for every later login.
+ * Returning users type phone + password on the Login screen
+ * (`signInWithPassword`) — no SMS at all.
  *
- * OTP channel is WhatsApp-first with SMS fallback via MSG91, routed through
- * a Supabase Send SMS Hook — see `supabase/functions/send-sms-hook/` and
- * `src/lib/sms.ts`. Channel routing is server-side; the app only ever asks
- * for `whatsapp` first and retries `sms` (see repository).
+ * OTP fires only as the secondary path: the Login screen's OTP tab
+ * (existing `requestOtp`/`verifyOtp` flow), signup number-confirmation,
+ * and forgot-password recovery. Delivery stays WhatsApp-first with SMS
+ * fallback via MSG91, routed server-side through the Supabase Send SMS Hook
+ * (`supabase/functions/send-sms-hook/`); the app only declares the channel.
  */
 
 export type OtpChannel = 'whatsapp' | 'sms';
@@ -43,6 +48,27 @@ export interface VerifyOtpInput {
   /** 6-digit code the user typed. */
   code: string;
 }
+
+export interface SignInWithPasswordInput {
+  /** Canonical 10-digit Indian mobile (see `validateIndianPhone`). */
+  phone: string;
+  /** Raw password as typed (never trimmed, never logged). */
+  password: string;
+}
+
+export interface SetPasswordInput {
+  /** New password, already client-validated (`validatePassword`). */
+  password: string;
+}
+
+/**
+ * Why the verify screen was opened — decides where success goes:
+ * `login` → tabs; `signup`/`recovery` → the set-password screen.
+ */
+export type VerifyPurpose = 'login' | 'signup' | 'recovery';
+
+/** Set-password context: first password vs replacement. */
+export type SetPasswordMode = 'signup' | 'recovery';
 
 export interface AuthUser {
   id: string;

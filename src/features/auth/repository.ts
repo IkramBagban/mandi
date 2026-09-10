@@ -3,19 +3,28 @@ import type { Session, User } from '@supabase/supabase-js';
 import { getSupabase } from '@/lib/supabase';
 import { validateIndianPhone } from '@/lib/validation';
 
+import { validatePassword } from './password';
 import { toE164Indian } from './phone';
 import { OTP_CHANNEL_ORDER } from './types';
-import type { AuthUser, OtpChannel, RequestOtpInput, VerifyOtpInput } from './types';
+import type {
+  AuthUser,
+  OtpChannel,
+  RequestOtpInput,
+  SetPasswordInput,
+  SignInWithPasswordInput,
+  VerifyOtpInput,
+} from './types';
 
 /**
- * Phone-OTP auth repository — the ONLY place that talks to Supabase Auth.
+ * Phone+password / phone-OTP auth repository — the ONLY place that talks to
+ * Supabase Auth.
  *
- * Screens call these three functions plus `mapAuthErrorToKey` (in
- * `./errors`) and never touch `supabase.auth` directly. Delivery routing
- * (WhatsApp-first → MSG91 SMS) is server-side in the Send SMS Hook
+ * Screens call these functions plus `mapAuthErrorToKey` (in `./errors`) and
+ * never touch `supabase.auth` directly. Delivery routing (WhatsApp-first →
+ * MSG91 SMS) is server-side in the Send SMS Hook
  * (`supabase/functions/send-sms-hook/`); the app only declares the channel.
  *
- * Security: the OTP value is never logged here or anywhere else.
+ * Security: passwords and OTP values are never logged here or anywhere else.
  */
 
 function canonicalPhoneOrThrow(raw: string): string {
@@ -72,6 +81,41 @@ export async function verifyOtp(input: VerifyOtpInput): Promise<AuthUser> {
 export async function signOut(): Promise<void> {
   const { error } = await getSupabase().auth.signOut();
   if (error) throw error;
+}
+
+/**
+ * Primary login: phone + password, zero SMS.
+ * Throws `Error(validation key)` for bad input, Supabase error otherwise.
+ */
+export async function signInWithPassword(input: SignInWithPasswordInput): Promise<AuthUser> {
+  const canonical = canonicalPhoneOrThrow(input.phone);
+  const checked = validatePassword(input.password);
+  if (!checked.ok) throw new Error(checked.errorKey);
+  const supabase = getSupabase();
+
+  const { data, error } = await supabase.auth.signInWithPassword({
+    phone: toE164Indian(canonical),
+    password: checked.value,
+  });
+  if (error) throw error;
+  if (!data.user) throw new Error('Password sign-in returned no user.');
+  return toAuthUser(data.user);
+}
+
+/**
+ * Attach (signup) or replace (recovery) the account password.
+ * Requires the session the OTP-verify step just established — both flows
+ * verify the number immediately before this, so `updateUser` is authorised.
+ */
+export async function setPassword(input: SetPasswordInput): Promise<AuthUser> {
+  const checked = validatePassword(input.password);
+  if (!checked.ok) throw new Error(checked.errorKey);
+  const supabase = getSupabase();
+
+  const { data, error } = await supabase.auth.updateUser({ password: checked.value });
+  if (error) throw error;
+  if (!data.user) throw new Error('Password update returned no user.');
+  return toAuthUser(data.user);
 }
 
 /** Current persisted session (`null` when logged out). Survives restarts. */

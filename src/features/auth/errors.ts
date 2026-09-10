@@ -59,6 +59,36 @@ export function mapAuthErrorToKey(error: unknown): string {
   if (text.includes('validation.phoneinvalid') || text.includes('phoneinvalid')) {
     return 'validation.phoneInvalid';
   }
+  // Password login: Supabase deliberately does not say which half is wrong.
+  if (
+    text.includes('invalid login credentials') ||
+    text.includes('invalid grant') ||
+    text.includes('email or phone not confirmed')
+  ) {
+    return 'auth.errorCredentialsInvalid';
+  }
+  // Password rejected server-side (too short, or flagged weak/leaked when
+  // the project enables leaked-password protection).
+  if (
+    text.includes('auth.errorpasswordtooshort') ||
+    text.includes('password should be at least') ||
+    text.includes('password must be at least')
+  ) {
+    return 'auth.errorPasswordTooShort';
+  }
+  if (
+    text.includes('weak') ||
+    text.includes('pwned') ||
+    text.includes('leaked') ||
+    text.includes('breach') ||
+    text.includes('commonly used') ||
+    text.includes('compromised')
+  ) {
+    return 'auth.errorPasswordWeak';
+  }
+  // Password screens reached without the OTP-verify session (e.g. deep link
+  // or expired session mid-flow) — point at Login, like the data layer does.
+  if (text.includes('auth session missing')) return 'auth.loginRequired';
   if (
     code === 'otp_expired' ||
     text.includes('expired') ||
