@@ -150,6 +150,35 @@ supabase/
 | WhatsApp | `features/khata/share.ts` (+ `KhataLedger` share button) | ✅ Khata summary share done — more share surfaces later    |
 | Photos   | `lib/upload.ts` + `features/people/photo.ts`             | ✅ Person photos wired — signed URLs + record photos later |
 
+## Sale records + Udhaari dashboard
+
+- **New sale** (`app/record/new.tsx`): person search → day stepper → commodity
+  chips (mosambi 1no default) → weight / crates / rate → expenses (hamali,
+  tolai, commission % auto-derived, transport, other) → optional receipt photo
+  (image picker + `uploadPhoto` compression) → live bill (`CalcCard`) →
+  confirm sheet → one `saveSaleWithKhata()` call.
+- **Single-writer flow** (no double entry, no orphans): `saveSaleWithKhata`
+  (`src/features/records/saveSale.ts`) inserts the `sale_records` row first,
+  then `postSaleToKhata` (`src/features/khata/autoPost.ts`) posts exactly one
+  mirror entry (`kind: 'debit'` — I owe the farmer the net, `method: 'udhaar'`).
+  If the mirror post fails, the sale row is deleted (compensating rollback).
+  No other module may post khata rows for sales. Walk-in (`person_id` null)
+  and zero-net sales post nothing.
+- **Dashboard** (Home tab): `summarizeUdhaari` (`src/features/khata/udhaari.ts`)
+  computes to-collect / to-pay / today's collection / top debtors purely from
+  `khata_entries` (+ people for avatars). Khata screens remain another
+  worker's lane — reuse `listEntries` / `listAllEntries` / `addEntry`.
+- **Money math** lives in one place: `calculateSale` (`records/calculations`);
+  `total = qty × rate`, `commission = total × % / 100`,
+  `net = total − (hamali+tolai+commission+transport+other)`.
+- **Demo mode**: with no Supabase env vars, repositories serve clearly-fake
+  seed data (see `records/demo.ts`, `khata/demo.ts`) so every screen works in
+  Expo Go; writes stay in memory for the session. Set the env vars and the
+  same code talks to Supabase (RLS-scoped, `owner_id` from the session).
+- **i18n**: new `sale.*`, `commodities.*`, `home.udhaari*`, `records.*` keys in
+  all four locales (en/hi/mr/ur share the exact same key set — verify by
+  flattening each JSON file and diffing the key lists before push).
+
 ## Commit conventions
 
 Conventional Commits, small scoped commits: `feat:`, `fix:`, `chore:`,
