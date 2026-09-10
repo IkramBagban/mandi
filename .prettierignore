@@ -1,0 +1,9 @@
+node_modules
+.expo
+.opencode
+dist
+web-build
+ios
+android
+package-lock.json
+assets/expo.icon
