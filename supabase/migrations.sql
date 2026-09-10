@@ -110,8 +110,8 @@ create table public.sale_records (
   created_at timestamptz not null default now(),
   updated_at timestamptz not null default now()
 );
--- expenses shape: {"hamali": n, "tolai": n, "commission": n, "transport": n}
--- invariant (enforced in app code): net = total - (hamali+tolai+commission+transport)
+-- expenses shape: {"hamali": n, "tolai": n, "commission": n, "transport": n, "other": n}
+-- invariant (enforced in app code): net = total - (hamali+tolai+commission+transport+other)
 
 create index sales_owner_date_idx
   on public.sale_records (owner_id, date desc);

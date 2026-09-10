@@ -47,6 +47,8 @@ export type SaleExpenses = {
   tolai?: number;
   commission?: number;
   transport?: number;
+  /** Any other deduction (e.g. bardana, grading). Added for the sale form. */
+  other?: number;
 };
 
 export type SaleRecordRow = {
