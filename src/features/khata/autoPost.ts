@@ -20,6 +20,10 @@ import type { KhataEntry, KhataEntryDraft } from './types';
  * is `kind: 'debit'`, `method: 'udhaar'`, `amount: sale.net`.
  * Walk-in sales (`person_id` null) and zero-net sales post NOTHING.
  *
+ * Writes go through the canonical offline-safe `addEntry` in `./repository`
+ * (Supabase + local cache, owned by the people-khata lane) — this file only
+ * owns the sale→draft mapping, never storage.
+ *
  * No other module may insert khata rows for sales. (True atomicity would need
  * a Postgres function/trigger — tracked as a TODO in `saveSale.ts`.)
  */

@@ -1,35 +1,30 @@
+import { filterPeople } from '@/features/people/types';
 import { listPeople } from '@/features/people/repository';
 import type { Person } from '@/features/people/types';
+import { isSupabaseConfigured } from '@/lib/supabase';
 
-import { DEMO_PEOPLE } from './demo';
+import { seedDemoData } from './demo';
 
 /**
- * Person lookup for the sale form (and anything else that needs "everyone I
- * trade with" without owning the people feature).
+ * Person lookup for the sale form, sales list, and dashboard (read-only use
+ * of the people feature — the add-person UI belongs to another worker).
  *
- * Tries the real people repository first; when Supabase is not configured yet
- * (the stub throws), falls back to clearly-labeled demo people so the sale
- * form and dashboard stay explorable in Expo Go. `demo: true` tells the UI
- * it is showing fallback data.
+ * Filtering reuses the canonical `filterPeople` (name + phone + village,
+ * digit-normalised). On a fresh unconfigured install the list is empty, so
+ * we run the at-most-once demo seed first — every screen stays explorable
+ * in Expo Go with zero setup. `demo: true` tells callers the rows may be
+ * seeded samples rather than the trader's own people.
  */
 
 export interface PeopleResult {
   people: Person[];
-  /** True when these are demo stand-ins, not the trader's real people. */
+  /** True when Supabase is unconfigured (rows may be seeded samples). */
   demo: boolean;
 }
 
-function matchesQuery(person: Person, query: string): boolean {
-  const q = query.trim().toLowerCase();
-  if (!q) return true;
-  return person.name.toLowerCase().includes(q) || (person.village ?? '').toLowerCase().includes(q);
-}
-
 export async function searchPeople(query: string): Promise<PeopleResult> {
-  try {
-    const live = await listPeople();
-    return { people: live.filter((p) => matchesQuery(p, query)), demo: false };
-  } catch {
-    return { people: DEMO_PEOPLE.filter((p) => matchesQuery(p, query)), demo: true };
-  }
+  const demo = !isSupabaseConfigured();
+  if (demo) await seedDemoData();
+  const live = await listPeople();
+  return { people: filterPeople(live, query), demo };
 }

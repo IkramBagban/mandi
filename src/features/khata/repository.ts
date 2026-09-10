@@ -1,104 +1,229 @@
-import type { KhataEntry, KhataEntryDraft } from './types';
+import { newLocalId, readLocalList, toRepoError, writeLocalList } from '@/lib/offline';
 import { getSupabase, isSupabaseConfigured } from '@/lib/supabase';
 
-import { addDemoEntry, getDemoEntries, makeDemoEntryId } from './demo';
+import type { KhataEntry, KhataEntryDraft, KhataEntryUpdate } from './types';
 
 /**
- * Khata repository (STUB for I/O; pure balance math is implemented).
+ * Khata repository — Supabase-first, offline-safe (same pattern as people).
  *
- * TODO(feature:khata-ledger): implement against Supabase, RLS-scoped to the
- * owner like all other tables. Convention: `credit` = they owe me (lena),
- * `debit` = I owe them (dena), `payment` = settled against the balance.
+ * Balance convention (kept from the foundation stub — do not flip signs):
+ * `credit` = they owe me (lena, +), `debit` = I owe them (dena, −),
+ * `payment` = settled against the balance (+). Confirm the payment sign
+ * with real traders before any money moves on it (see README TODOs).
  */
 
 /** Net balance for a person: positive = they owe me, negative = I owe them. */
 export function computeBalance(entries: Pick<KhataEntry, 'kind' | 'amount'>[]): number {
   return entries.reduce((sum, e) => {
-    if (e.kind === 'debit') return sum - e.amount;
-    return sum + e.amount;
+    if (e.kind === 'debit') return sum - Number(e.amount);
+    return sum + Number(e.amount);
   }, 0);
 }
 
-export async function listEntries(personId: string): Promise<KhataEntry[]> {
-  if (!isSupabaseConfigured()) {
-    return getDemoEntries().filter((e) => e.person_id === personId);
+const ENTRIES_CACHE_KEY = 'mandi-khata-entries-v1';
+const LOCAL_OWNER = 'local';
+
+function nowIso(): string {
+  return new Date().toISOString();
+}
+
+async function getOwnerId(): Promise<string | null> {
+  if (!isSupabaseConfigured()) return null;
+  try {
+    const supabase = getSupabase();
+    const { data } = await supabase.auth.getUser();
+    return data.user?.id ?? null;
+  } catch {
+    return null;
   }
-  const supabase = getSupabase();
-  const { data, error } = await supabase
-    .from('khata_entries')
-    .select('*')
-    .eq('person_id', personId)
-    .order('date', { ascending: false })
-    .order('created_at', { ascending: false })
-    .limit(500);
-  if (error) throw error;
-  return data;
+}
+
+function cleanDraft(draft: KhataEntryDraft) {
+  return {
+    person_id: draft.person_id,
+    date: draft.date,
+    kind: draft.kind,
+    amount: draft.amount,
+    method: draft.method,
+    note: draft.note?.trim() ? draft.note.trim() : null,
+  };
+}
+
+function cleanUpdate(update: KhataEntryUpdate) {
+  return {
+    ...(update.date !== undefined ? { date: update.date } : {}),
+    ...(update.kind !== undefined ? { kind: update.kind } : {}),
+    ...(update.amount !== undefined ? { amount: update.amount } : {}),
+    ...(update.method !== undefined ? { method: update.method } : {}),
+    ...(update.note !== undefined ? { note: update.note?.trim() ? update.note.trim() : null } : {}),
+  };
+}
+
+function sortNewest(entries: KhataEntry[]): KhataEntry[] {
+  return [...entries].sort((a, b) => {
+    if (a.date !== b.date) return a.date < b.date ? 1 : -1;
+    return a.created_at < b.created_at ? 1 : -1;
+  });
+}
+
+export async function listEntries(personId: string): Promise<KhataEntry[]> {
+  const ownerId = await getOwnerId();
+  if (ownerId) {
+    try {
+      const supabase = getSupabase();
+      const { data, error } = await supabase
+        .from('khata_entries')
+        .select('*')
+        .eq('person_id', personId)
+        .order('date', { ascending: false })
+        .order('created_at', { ascending: false });
+      if (error) throw error;
+      const rows = (data ?? []) as KhataEntry[];
+      const cached = await readLocalList<KhataEntry>(ENTRIES_CACHE_KEY);
+      const others = cached.filter((e) => e.person_id !== personId);
+      await writeLocalList(ENTRIES_CACHE_KEY, [...rows, ...others]);
+      return rows;
+    } catch (error) {
+      const cached = await readLocalList<KhataEntry>(ENTRIES_CACHE_KEY);
+      const mine = cached.filter((e) => e.person_id === personId);
+      if (mine.length > 0) return sortNewest(mine);
+      throw toRepoError(error);
+    }
+  }
+  const cached = await readLocalList<KhataEntry>(ENTRIES_CACHE_KEY);
+  return sortNewest(cached.filter((e) => e.person_id === personId));
 }
 
 /**
  * Every entry for the signed-in owner, newest first. Powers the Udhaari
- * dashboard (`summarizeUdhaari` in `./udhaari`). Khata screens (owned by
- * another worker) should reuse this — never re-query per person in a loop.
+ * dashboard (`summarizeUdhaari` in `./udhaari`) — prefer this over looping
+ * `listEntries` per person.
  */
 export async function listAllEntries(): Promise<KhataEntry[]> {
-  if (!isSupabaseConfigured()) return getDemoEntries();
-  const supabase = getSupabase();
-  const { data, error } = await supabase
-    .from('khata_entries')
-    .select('*')
-    .order('date', { ascending: false })
-    .order('created_at', { ascending: false })
-    .limit(1000);
-  if (error) throw error;
-  return data;
+  const ownerId = await getOwnerId();
+  if (ownerId) {
+    try {
+      const supabase = getSupabase();
+      const { data, error } = await supabase
+        .from('khata_entries')
+        .select('*')
+        .order('date', { ascending: false })
+        .order('created_at', { ascending: false })
+        .limit(1000);
+      if (error) throw error;
+      const rows = (data ?? []) as KhataEntry[];
+      await writeLocalList(ENTRIES_CACHE_KEY, rows);
+      return rows;
+    } catch (error) {
+      const cached = await readLocalList<KhataEntry>(ENTRIES_CACHE_KEY);
+      if (cached.length > 0) return sortNewest(cached);
+      throw toRepoError(error);
+    }
+  }
+  const cached = await readLocalList<KhataEntry>(ENTRIES_CACHE_KEY);
+  return sortNewest(cached);
 }
 
-/**
- * Insert one entry. `owner_id` always comes from the live session, never
- * from client state (RLS rule). Amounts must be > 0 (DB check).
- */
 export async function addEntry(draft: KhataEntryDraft): Promise<KhataEntry> {
-  if (!Number.isFinite(draft.amount) || draft.amount <= 0) {
-    throw new Error('Khata amount must be more than zero.');
+  const cleaned = cleanDraft(draft);
+  const ownerId = await getOwnerId();
+  if (ownerId) {
+    try {
+      const supabase = getSupabase();
+      const { data, error } = await supabase
+        .from('khata_entries')
+        .insert({ ...cleaned, owner_id: ownerId })
+        .select()
+        .single();
+      if (error) throw error;
+      const row = data as KhataEntry;
+      const cached = await readLocalList<KhataEntry>(ENTRIES_CACHE_KEY);
+      await writeLocalList(ENTRIES_CACHE_KEY, [row, ...cached.filter((e) => e.id !== row.id)]);
+      return row;
+    } catch {
+      return saveLocalEntry(cleaned);
+    }
   }
-  if (!isSupabaseConfigured()) {
-    return addDemoEntry({
-      id: makeDemoEntryId(),
-      owner_id: 'demo-owner',
-      person_id: draft.person_id,
-      date: draft.date,
-      kind: draft.kind,
-      amount: Math.round(draft.amount * 100) / 100,
-      method: draft.method,
-      note: draft.note ?? null,
-      created_at: new Date().toISOString(),
-    });
+  return saveLocalEntry(cleaned);
+}
+
+async function saveLocalEntry(cleaned: ReturnType<typeof cleanDraft>): Promise<KhataEntry> {
+  const row: KhataEntry = {
+    id: newLocalId('entry'),
+    owner_id: LOCAL_OWNER,
+    created_at: nowIso(),
+    ...cleaned,
+  };
+  const cached = await readLocalList<KhataEntry>(ENTRIES_CACHE_KEY);
+  await writeLocalList(ENTRIES_CACHE_KEY, [row, ...cached]);
+  return row;
+}
+
+export async function updateEntry(id: string, update: KhataEntryUpdate): Promise<KhataEntry> {
+  const cleaned = cleanUpdate(update);
+  const ownerId = await getOwnerId();
+  if (ownerId) {
+    try {
+      const supabase = getSupabase();
+      const { data, error } = await supabase
+        .from('khata_entries')
+        .update(cleaned)
+        .eq('id', id)
+        .select()
+        .single();
+      if (error) throw error;
+      const row = data as KhataEntry;
+      const cached = await readLocalList<KhataEntry>(ENTRIES_CACHE_KEY);
+      await writeLocalList(
+        ENTRIES_CACHE_KEY,
+        cached.map((e) => (e.id === id ? row : e)),
+      );
+      return row;
+    } catch {
+      return updateLocalEntry(id, cleaned);
+    }
   }
-  const supabase = getSupabase();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-  if (!user) throw new Error('Not signed in.');
-  const { data, error } = await supabase
-    .from('khata_entries')
-    .insert({
-      owner_id: user.id,
-      person_id: draft.person_id,
-      date: draft.date,
-      kind: draft.kind,
-      amount: draft.amount,
-      method: draft.method,
-      note: draft.note ?? null,
-    })
-    .select()
-    .single();
-  if (error) throw error;
-  return data;
+  return updateLocalEntry(id, cleaned);
+}
+
+async function updateLocalEntry(
+  id: string,
+  cleaned: ReturnType<typeof cleanUpdate>,
+): Promise<KhataEntry> {
+  const cached = await readLocalList<KhataEntry>(ENTRIES_CACHE_KEY);
+  const existing = cached.find((e) => e.id === id);
+  if (!existing) throw toRepoError(new Error('entry not found'));
+  const updated: KhataEntry = { ...existing, ...cleaned };
+  await writeLocalList(
+    ENTRIES_CACHE_KEY,
+    cached.map((e) => (e.id === id ? updated : e)),
+  );
+  return updated;
 }
 
 export async function deleteEntry(id: string): Promise<void> {
-  if (!isSupabaseConfigured()) return;
-  const supabase = getSupabase();
-  const { error } = await supabase.from('khata_entries').delete().eq('id', id);
-  if (error) throw error;
+  const ownerId = await getOwnerId();
+  if (ownerId) {
+    try {
+      const supabase = getSupabase();
+      const { error } = await supabase.from('khata_entries').delete().eq('id', id);
+      if (error) throw error;
+    } catch {
+      // Offline — still remove locally so the UI stays truthful.
+    }
+  }
+  const cached = await readLocalList<KhataEntry>(ENTRIES_CACHE_KEY);
+  await writeLocalList(
+    ENTRIES_CACHE_KEY,
+    cached.filter((e) => e.id !== id),
+  );
+}
+
+/** Remove every entry of a person (used after deleting the person). */
+export async function deleteEntriesForPerson(personId: string): Promise<void> {
+  const cached = await readLocalList<KhataEntry>(ENTRIES_CACHE_KEY);
+  await writeLocalList(
+    ENTRIES_CACHE_KEY,
+    cached.filter((e) => e.person_id !== personId),
+  );
 }

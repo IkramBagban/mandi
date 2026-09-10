@@ -1,13 +1,13 @@
-import type { SaleExpenses, SaleRecord, SaleDraft } from './types';
+import { newLocalId, readLocalList, toRepoError, writeLocalList } from '@/lib/offline';
 import { getSupabase, isSupabaseConfigured } from '@/lib/supabase';
 
-import { addDemoSale, deleteDemoSale, demoId, getDemoSales } from './demo';
+import type { SaleExpenses, SaleRecord, SaleDraft } from './types';
 
 /**
- * Sale records repository (STUB for I/O; pure money math is implemented).
+ * Sale records repository — Supabase-first, offline-safe (same pattern as
+ * people + khata: AsyncStorage mirror, Supabase when configured + signed in).
  *
- * TODO(feature:sale-entry): implement against Supabase, RLS-scoped to the
- * owner. Invariant (also in `supabase/migrations.sql`):
+ * Invariant (also in `supabase/migrations.sql`):
  *   total = qty_kg × rate_per_kg
  *   net   = total − (hamali + tolai + commission + transport + other)
  */
@@ -30,50 +30,82 @@ export function computeNet(total: number, expenses: SaleExpenses): number {
   return Math.round((total - totalExpenses(expenses)) * 100) / 100;
 }
 
+const SALES_CACHE_KEY = 'mandi-sales-v1';
+const LOCAL_OWNER = 'local';
+
+function nowIso(): string {
+  return new Date().toISOString();
+}
+
+async function getOwnerId(): Promise<string | null> {
+  if (!isSupabaseConfigured()) return null;
+  try {
+    const supabase = getSupabase();
+    const { data } = await supabase.auth.getUser();
+    return data.user?.id ?? null;
+  } catch {
+    return null;
+  }
+}
+
+function cleanDraft(draft: SaleDraft) {
+  return {
+    person_id: draft.person_id ?? null,
+    date: draft.date,
+    commodity: draft.commodity.trim(),
+    variety: draft.variety?.trim() ? draft.variety.trim() : null,
+    qty_kg: draft.qty_kg,
+    crates: draft.crates ?? null,
+    rate_per_kg: draft.rate_per_kg,
+    photo_url: draft.photo_url ?? null,
+  };
+}
+
+function sortNewest(sales: SaleRecord[]): SaleRecord[] {
+  return [...sales].sort((a, b) => {
+    if (a.date !== b.date) return a.date < b.date ? 1 : -1;
+    return a.created_at < b.created_at ? 1 : -1;
+  });
+}
+
+async function fetchAll(ownerId: string | null): Promise<SaleRecord[]> {
+  if (ownerId) {
+    try {
+      const supabase = getSupabase();
+      const { data, error } = await supabase
+        .from('sale_records')
+        .select('*')
+        .order('date', { ascending: false })
+        .order('created_at', { ascending: false })
+        .limit(500);
+      if (error) throw error;
+      const rows = (data ?? []) as SaleRecord[];
+      await writeLocalList(SALES_CACHE_KEY, rows);
+      return rows;
+    } catch (error) {
+      const cached = await readLocalList<SaleRecord>(SALES_CACHE_KEY);
+      if (cached.length > 0) return sortNewest(cached);
+      throw toRepoError(error);
+    }
+  }
+  const cached = await readLocalList<SaleRecord>(SALES_CACHE_KEY);
+  return sortNewest(cached);
+}
+
 export async function listSales(): Promise<SaleRecord[]> {
-  if (!isSupabaseConfigured()) return getDemoSales();
-  const supabase = getSupabase();
-  const { data, error } = await supabase
-    .from('sale_records')
-    .select('*')
-    .order('date', { ascending: false })
-    .order('created_at', { ascending: false })
-    .limit(200);
-  if (error) throw error;
-  return data;
+  return fetchAll(await getOwnerId());
 }
 
 /** One day's sales, newest first — powers the daily list. */
 export async function listSalesByDay(dateISO: string): Promise<SaleRecord[]> {
-  if (!isSupabaseConfigured()) {
-    return getDemoSales().filter((s) => s.date === dateISO);
-  }
-  const supabase = getSupabase();
-  const { data, error } = await supabase
-    .from('sale_records')
-    .select('*')
-    .eq('date', dateISO)
-    .order('created_at', { ascending: false })
-    .limit(200);
-  if (error) throw error;
-  return data;
+  const all = await fetchAll(await getOwnerId());
+  return all.filter((s) => s.date === dateISO);
 }
 
 /** Every sale for one person, newest first — powers the per-person list. */
 export async function listSalesForPerson(personId: string): Promise<SaleRecord[]> {
-  if (!isSupabaseConfigured()) {
-    return getDemoSales().filter((s) => s.person_id === personId);
-  }
-  const supabase = getSupabase();
-  const { data, error } = await supabase
-    .from('sale_records')
-    .select('*')
-    .eq('person_id', personId)
-    .order('date', { ascending: false })
-    .order('created_at', { ascending: false })
-    .limit(200);
-  if (error) throw error;
-  return data;
+  const all = await fetchAll(await getOwnerId());
+  return all.filter((s) => s.person_id === personId);
 }
 
 /**
@@ -82,61 +114,65 @@ export async function listSalesForPerson(personId: string): Promise<SaleRecord[]
  * the live session, never from client state (RLS rule).
  */
 export async function addSale(draft: SaleDraft): Promise<SaleRecord> {
-  const total = computeTotal(draft.qty_kg, draft.rate_per_kg);
+  const cleaned = cleanDraft(draft);
+  const total = computeTotal(cleaned.qty_kg, cleaned.rate_per_kg);
   const net = computeNet(total, draft.expenses);
-  if (!isSupabaseConfigured()) {
-    const row: SaleRecord = {
-      id: demoId('demo-s'),
-      owner_id: 'demo-owner',
-      person_id: draft.person_id ?? null,
-      date: draft.date,
-      commodity: draft.commodity,
-      variety: draft.variety ?? null,
-      qty_kg: draft.qty_kg,
-      crates: draft.crates ?? null,
-      rate_per_kg: draft.rate_per_kg,
-      total,
-      expenses: draft.expenses,
-      net,
-      photo_url: draft.photo_url ?? null,
-      created_at: new Date().toISOString(),
-    };
-    addDemoSale(row);
-    return row;
+  const ownerId = await getOwnerId();
+  if (ownerId) {
+    try {
+      const supabase = getSupabase();
+      const { data, error } = await supabase
+        .from('sale_records')
+        .insert({ ...cleaned, owner_id: ownerId, total, expenses: draft.expenses, net })
+        .select()
+        .single();
+      if (error) throw error;
+      const row = data as SaleRecord;
+      const cached = await readLocalList<SaleRecord>(SALES_CACHE_KEY);
+      await writeLocalList(SALES_CACHE_KEY, [row, ...cached.filter((s) => s.id !== row.id)]);
+      return row;
+    } catch {
+      // Supabase write failed (usually offline) — keep locally, same as khata.
+      return saveLocalSale(cleaned, total, draft.expenses, net);
+    }
   }
-  const supabase = getSupabase();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-  if (!user) throw new Error('Not signed in.');
-  const { data, error } = await supabase
-    .from('sale_records')
-    .insert({
-      owner_id: user.id,
-      person_id: draft.person_id ?? null,
-      date: draft.date,
-      commodity: draft.commodity,
-      variety: draft.variety ?? null,
-      qty_kg: draft.qty_kg,
-      crates: draft.crates ?? null,
-      rate_per_kg: draft.rate_per_kg,
-      total,
-      expenses: draft.expenses,
-      net,
-      photo_url: draft.photo_url ?? null,
-    })
-    .select()
-    .single();
-  if (error) throw error;
-  return data;
+  return saveLocalSale(cleaned, total, draft.expenses, net);
+}
+
+async function saveLocalSale(
+  cleaned: ReturnType<typeof cleanDraft>,
+  total: number,
+  expenses: SaleExpenses,
+  net: number,
+): Promise<SaleRecord> {
+  const row: SaleRecord = {
+    id: newLocalId('sale'),
+    owner_id: LOCAL_OWNER,
+    created_at: nowIso(),
+    total,
+    expenses,
+    net,
+    ...cleaned,
+  };
+  const cached = await readLocalList<SaleRecord>(SALES_CACHE_KEY);
+  await writeLocalList(SALES_CACHE_KEY, [row, ...cached]);
+  return row;
 }
 
 export async function deleteSale(id: string): Promise<void> {
-  if (!isSupabaseConfigured()) {
-    deleteDemoSale(id);
-    return;
+  const ownerId = await getOwnerId();
+  if (ownerId) {
+    try {
+      const supabase = getSupabase();
+      const { error } = await supabase.from('sale_records').delete().eq('id', id);
+      if (error) throw error;
+    } catch {
+      // Offline — still remove locally so the UI stays truthful.
+    }
   }
-  const supabase = getSupabase();
-  const { error } = await supabase.from('sale_records').delete().eq('id', id);
-  if (error) throw error;
+  const cached = await readLocalList<SaleRecord>(SALES_CACHE_KEY);
+  await writeLocalList(
+    SALES_CACHE_KEY,
+    cached.filter((s) => s.id !== id),
+  );
 }
