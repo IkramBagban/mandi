@@ -96,10 +96,33 @@ are sanitized; Supabase enforces its own per-number rate limits on top.
 | `npm start`                       | Start the dev server (`expo start`)  |
 | `npm run android` / `ios` / `web` | Start targeting a platform           |
 | `npm run typecheck`               | `tsc --noEmit` (strict)              |
+| `npm test`                        | Jest unit tests, single CI run       |
 | `npm run lint` / `lint:fix`       | ESLint (expo flat config + prettier) |
 | `npm run format` / `format:check` | Prettier write / check               |
 
-Quality gate before every push: `npm run typecheck && npm run lint`.
+Quality gate before every push: `npm test && npm run typecheck && npm run lint`.
+
+## Testing
+
+Runner: **Jest + `jest-expo`** (pinned to SDK 57: `jest@^29` + `jest-expo@~57`,
+the pair Expo supports for this SDK). Config is `jest.config.js`
+(`jest-expo` preset, `@/` → `src/` alias, `tests/setup.ts` loaded first);
+`babel.config.js` (`babel-preset-expo`) is required for the Jest transform.
+`npm test` runs `jest --ci` — one non-watch run, CI-friendly.
+
+- Tests live in **`tests/unit/`**, mirroring `src/` loosely
+  (`validation.test.ts` → `src/lib/validation.ts`, …). One file per module,
+  self-contained mocks — no order dependence, no network, fast (~seconds).
+- Only **pure logic** is tested. `expo-*` native modules and Supabase are
+  mocked at the boundary (`jest.mock('expo-image-manipulator')`,
+  `jest.mock('@/lib/supabase')`); `tests/setup.ts` swaps AsyncStorage for its
+  official in-memory mock. No device/RN-render tests, no Detox/Maestro.
+- Suite rule: reset only your own mocks in `beforeEach`
+  (`mockFn.mockReset()`), never `jest.resetAllMocks()` — a global reset wipes
+  the shared AsyncStorage mock and breaks every offline-mirror test.
+- Adding a suite: drop `tests/unit/<area>.test.ts` next to the others and run
+  `npm test`. Reserved next: sale math (`features/records`) and OTP/phone
+  helpers (`features/auth`) once those branches land — extend, don't restructure.
 
 ## Folder map
 
@@ -137,6 +160,10 @@ src/
     tokens.ts            Colors, spacing, type scale, touch targets — one place
 supabase/
   migrations.sql         people, khata_entries, sale_records + RLS + storage notes
+tests/
+  setup.ts               Global Jest setup (in-memory AsyncStorage mock)
+  unit/                  Unit suites mirroring src/ (validation, format,
+                         i18n-parity, khata, offline, people-repository, upload)
 ```
 
 ## Decisions (brief)
