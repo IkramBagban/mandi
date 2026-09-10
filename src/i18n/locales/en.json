@@ -1,0 +1,76 @@
+{
+  "common": {
+    "appName": "Mandi",
+    "add": "Add",
+    "save": "Save",
+    "cancel": "Cancel",
+    "back": "Back",
+    "done": "Done",
+    "total": "Total",
+    "loading": "Loading…",
+    "comingSoon": "Coming soon — the full screen will be built here."
+  },
+  "tabs": {
+    "home": "Home",
+    "people": "People",
+    "khata": "Khata",
+    "records": "Sales",
+    "settings": "Settings"
+  },
+  "home": {
+    "title": "Namaste!",
+    "subtitle": "What do you want to do today?",
+    "openPeople": "People",
+    "openPeopleHint": "Farmers, traders, labour",
+    "openKhata": "Khata",
+    "openKhataHint": "Udhaar, payment, balance",
+    "openRecords": "New sale",
+    "openRecordsHint": "Weight, rate, expenses"
+  },
+  "people": {
+    "title": "People",
+    "subtitle": "Everyone you trade with, with photos.",
+    "addPerson": "Add person",
+    "searchPlaceholder": "Search name or village",
+    "emptyTitle": "No people yet",
+    "emptyBody": "Add your first farmer or trader with a photo."
+  },
+  "khata": {
+    "title": "Khata",
+    "subtitle": "Who owes whom, and how much.",
+    "newEntry": "New entry",
+    "emptyTitle": "No entries yet",
+    "emptyBody": "Record udhaar or payment for a person."
+  },
+  "records": {
+    "title": "Sales",
+    "subtitle": "Every auction sale with weight and rate.",
+    "newSale": "New sale",
+    "emptyTitle": "No sales yet",
+    "emptyBody": "Record your first sale with weight and rate."
+  },
+  "settings": {
+    "title": "Settings",
+    "language": "Language",
+    "languageSubtitle": "App language",
+    "restartNote": "If you change to or from Urdu, restart the app once so the layout flips correctly.",
+    "about": "About Mandi",
+    "aboutBody": "Simple khata and sale records for mandi traders and farmers.",
+    "version": "Version"
+  },
+  "languages": {
+    "en": "English",
+    "hi": "हिन्दी",
+    "mr": "मराठी",
+    "ur": "اردو"
+  },
+  "validation": {
+    "amountRequired": "Please enter an amount.",
+    "amountInvalid": "Amount looks wrong. Use only numbers.",
+    "amountNotPositive": "Amount must be more than zero.",
+    "amountTooLarge": "Amount is too large.",
+    "phoneInvalid": "Phone number must be 10 digits.",
+    "nameRequired": "Please enter a name.",
+    "qtyInvalid": "Weight must be more than zero."
+  }
+}
