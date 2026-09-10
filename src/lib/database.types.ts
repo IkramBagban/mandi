@@ -16,7 +16,7 @@ export type PersonType =
 export type KhataKind = 'credit' | 'debit' | 'payment';
 export type PayMethod = 'cash' | 'upi' | 'udhaar';
 
-export interface PersonRow {
+export type PersonRow = {
   id: string;
   owner_id: string;
   name: string;
@@ -26,13 +26,13 @@ export interface PersonRow {
   village: string | null;
   notes: string | null;
   created_at: string;
-}
+};
 
 export type PersonInsert = Omit<PersonRow, 'id' | 'created_at'> & {
   id?: string;
 };
 
-export interface KhataEntryRow {
+export type KhataEntryRow = {
   id: string;
   owner_id: string;
   person_id: string;
@@ -42,20 +42,20 @@ export interface KhataEntryRow {
   method: PayMethod;
   note: string | null;
   created_at: string;
-}
+};
 
 export type KhataEntryInsert = Omit<KhataEntryRow, 'id' | 'created_at'> & {
   id?: string;
 };
 
-export interface SaleExpenses {
+export type SaleExpenses = {
   hamali?: number;
   tolai?: number;
   commission?: number;
   transport?: number;
-}
+};
 
-export interface SaleRecordRow {
+export type SaleRecordRow = {
   id: string;
   owner_id: string;
   person_id: string | null;
@@ -70,7 +70,7 @@ export interface SaleRecordRow {
   net: number;
   photo_url: string | null;
   created_at: string;
-}
+};
 
 export type SaleRecordInsert = Omit<SaleRecordRow, 'id' | 'created_at'> & {
   id?: string;
@@ -84,17 +84,24 @@ export interface Database {
         Row: PersonRow;
         Insert: PersonInsert;
         Update: Partial<PersonInsert>;
+        Relationships: [];
       };
       khata_entries: {
         Row: KhataEntryRow;
         Insert: KhataEntryInsert;
         Update: Partial<KhataEntryInsert>;
+        Relationships: [];
       };
       sale_records: {
         Row: SaleRecordRow;
         Insert: SaleRecordInsert;
         Update: Partial<SaleRecordInsert>;
+        Relationships: [];
       };
     };
+    // Empty Views/Functions so the shape satisfies the client's
+    // GenericSchema (same as `supabase gen types` output).
+    Views: Record<string, never>;
+    Functions: Record<string, never>;
   };
 }
