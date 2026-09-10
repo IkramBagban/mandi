@@ -290,6 +290,58 @@ tests/
   all four locales (en/hi/mr/ur share the exact same key set — verify by
   flattening each JSON file and diffing the key lists before push).
 
+## CI/CD
+
+Patterns copied from the sibling Expo apps (`yaadora`, `snap-mind`):
+same action majors (`actions/checkout@v4`, `actions/setup-node@v4` with
+Node 20, `expo/expo-github-action@v8`), same lint → typecheck gate before
+any EAS build, same `development` / `preview` (APK, internal) /
+`production` profile shape in `eas.json`. Deliberate differences: mandi is
+plain npm (no bun/pnpm, so `npm ci` + `cache: npm`), CI runs on **every**
+push + PR (siblings filter to main/develop/staging — mandi is one small
+app, so the gate is cheap), and production builds trigger on `v*` tags
+(siblings build preview on a staging-branch push).
+
+| Workflow                            | Trigger                                                                | What it does                                                                                          |
+| ----------------------------------- | ---------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------- |
+| `CI` (`.github/workflows/ci.yml`)   | every `push` + `pull_request`                                          | `npm ci` → `npm run lint` → `npm run typecheck` → `npm test` → `npx expo export --platform web` (build proof). Steps are sequential, so the first failure stops the job (fail-fast). |
+| `EAS builds` (`eas-deploy.yml`)     | manual (`Actions` → `EAS builds` → `Run workflow`, pick profile/platform) or pushing a `v*` tag | lint + typecheck gate, then `eas build --non-interactive`. Tags always build `production` / `android` (Play Store `.aab`); manual runs default to `preview` / `android` (installable `.apk`). |
+
+### Triggering builds
+
+```sh
+# Preview APK (installable, internal distribution) — or use the Actions UI:
+gh workflow run "EAS builds" --ref <branch> -f profile=preview -f platform=android
+
+# Production build (Play Store bundle):
+git tag v1.0.0 && git push origin v1.0.0
+```
+
+### Secrets setup checklist (names only — never commit values)
+
+GitHub repo → `Settings` → `Secrets and variables` → `Actions` → `New repository secret`:
+
+| Secret                          | Required for              | Notes                                                                                       |
+| ------------------------------- | ------------------------- | --------------------------------------------------------------------------------------------- |
+| `EXPO_TOKEN`                    | any EAS build             | Expo access token (`https://expo.dev/settings/access-tokens`). Also authenticates the Expo GitHub Action. |
+| `EXPO_PUBLIC_SUPABASE_URL`      | builds that need live data | Same value as `.env`. If unset, the build still succeeds — the app falls back to offline stubs. |
+| `EXPO_PUBLIC_SUPABASE_ANON_KEY` | builds that need live data | Anon/public key only — never the service role key. Same fallback behaviour as above.          |
+
+One-time EAS linking (needs no secret in the repo): `npx eas-cli init`
+(or `eas init`) writes the Expo project ID into `app.json`
+(`extra.eas.projectId`) — commit that file. Until it exists, EAS builds
+fail at "project not linked", which is expected.
+
+### OTA updates: deliberately NOT enabled
+
+Neither sibling repo configures `expo-updates`, and mandi doesn't either —
+this is a money-adjacent ledger app, so updates ship as versioned builds
+(`v*` tags → production) with a reviewable binary, not silent JS pushes.
+To enable OTA later: `npx expo install expo-updates`, add an
+`updates.url` + runtime-version policy in `app.json`, map EAS profiles to
+channels (`preview`/`production`), and publish with `eas update --channel …`.
+That needs its own channel/release discipline — don't bolt it on silently.
+
 ## Commit conventions
 
 Conventional Commits, small scoped commits: `feat:`, `fix:`, `chore:`,

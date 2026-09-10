@@ -1,0 +1,40 @@
+name: CI
+
+# Single-app pipeline: every push + every PR runs the full gate.
+# (Sibling monorepos filter pushes to main/develop/staging; mandi is one
+# small app, so CI runs on all pushes — cheap and fail-fast.)
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  checks:
+    name: lint, typecheck, jest + web export
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          # Matches the sibling repos (yaadora, snap-mind) and README (Node 20+).
+          node-version: 20
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run ESLint
+        run: npm run lint
+
+      - name: Run typecheck
+        run: npm run typecheck
+
+      - name: Run Jest tests
+        run: npm test
+
+      - name: Web export (build proof)
+        run: npx expo export --platform web
