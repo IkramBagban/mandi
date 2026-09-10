@@ -22,9 +22,7 @@ export interface PeopleResult {
 function matchesQuery(person: Person, query: string): boolean {
   const q = query.trim().toLowerCase();
   if (!q) return true;
-  return (
-    person.name.toLowerCase().includes(q) || (person.village ?? '').toLowerCase().includes(q)
-  );
+  return person.name.toLowerCase().includes(q) || (person.village ?? '').toLowerCase().includes(q);
 }
 
 export async function searchPeople(query: string): Promise<PeopleResult> {

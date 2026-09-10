@@ -2,11 +2,7 @@ import type { TFunction } from 'i18next';
 
 import { validateAmount, validateQuantityKg } from '@/lib/validation';
 
-import {
-  parseCommissionPct,
-  parseOptionalCount,
-  parseOptionalMoney,
-} from './calculations';
+import { parseCommissionPct, parseOptionalCount, parseOptionalMoney } from './calculations';
 
 /**
  * Sale-form validation. Returns i18n KEYS (not translated strings), matching

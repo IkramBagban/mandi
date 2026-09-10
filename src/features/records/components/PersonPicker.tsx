@@ -28,7 +28,6 @@ export function PersonPicker({ selected, onSelect, error }: PersonPickerProps) {
 
   useEffect(() => {
     let cancelled = false;
-    setLoading(true);
     const timer = setTimeout(() => {
       searchPeople(query)
         .then(({ people }) => {
@@ -47,6 +46,11 @@ export function PersonPicker({ selected, onSelect, error }: PersonPickerProps) {
     };
   }, [query]);
 
+  const onQueryChange = (text: string) => {
+    setQuery(text);
+    setLoading(true);
+  };
+
   return (
     <View style={styles.wrapper}>
       <Text style={styles.label}>{t('sale.person')}</Text>
@@ -54,7 +58,7 @@ export function PersonPicker({ selected, onSelect, error }: PersonPickerProps) {
         <MaterialIcons name="search" size={28} color={colors.textMuted} />
         <TextInput
           value={query}
-          onChangeText={setQuery}
+          onChangeText={onQueryChange}
           placeholder={t('sale.searchPerson')}
           placeholderTextColor={colors.disabled}
           accessibilityLabel={t('sale.searchPerson')}

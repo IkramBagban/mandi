@@ -93,7 +93,20 @@ export default function NewSaleScreen() {
       transport,
       other,
     }),
-    [person, date, commodity, variety, qty, crates, rate, hamali, tolai, commissionPct, transport, other],
+    [
+      person,
+      date,
+      commodity,
+      variety,
+      qty,
+      crates,
+      rate,
+      hamali,
+      tolai,
+      commissionPct,
+      transport,
+      other,
+    ],
   );
 
   const { errors, parsed } = useMemo(() => validateSaleForm(values), [values]);
@@ -333,12 +346,7 @@ export default function NewSaleScreen() {
         <Text style={styles.banner}>{t('sale.fixErrors')}</Text>
       ) : null}
 
-      <BigButton
-        label={t('sale.confirm')}
-        icon="check"
-        onPress={onSavePress}
-        testID="sale-save"
-      />
+      <BigButton label={t('sale.confirm')} icon="check" onPress={onSavePress} testID="sale-save" />
 
       <ConfirmSheet
         visible={sheetVisible && parsed != null}

@@ -80,7 +80,9 @@ function parseOptionalDecimal(
   raw: string,
   opts: { maxDecimals: number; max: number },
 ): OptionalNumber {
-  const text = normalizeDigits(raw).trim().replace(/[,，\s]/g, '');
+  const text = normalizeDigits(raw)
+    .trim()
+    .replace(/[,，\s]/g, '');
   if (!text) return { ok: true, value: 0 };
   if (!/^\d+(\.\d+)?$/.test(text)) return { ok: false, errorKey: 'validation.amountInvalid' };
   const decimals = text.includes('.') ? (text.split('.')[1]?.length ?? 0) : 0;
@@ -109,8 +111,12 @@ export function parseCommissionPct(raw: string): OptionalNumber {
 }
 
 /** Optional whole count (crates/bags): blank → null, else a positive integer. */
-export function parseOptionalCount(raw: string): { ok: true; value: number | null } | { ok: false; errorKey: string } {
-  const text = normalizeDigits(raw).trim().replace(/[,，\s]/g, '');
+export function parseOptionalCount(
+  raw: string,
+): { ok: true; value: number | null } | { ok: false; errorKey: string } {
+  const text = normalizeDigits(raw)
+    .trim()
+    .replace(/[,，\s]/g, '');
   if (!text) return { ok: true, value: null };
   if (!/^\d+$/.test(text)) return { ok: false, errorKey: 'validation.amountInvalid' };
   const value = Number(text);

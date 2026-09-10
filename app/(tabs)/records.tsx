@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { router, useFocusEffect } from 'expo-router';
 import { ActivityIndicator, Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
@@ -46,11 +46,7 @@ export default function RecordsScreen() {
     }
   }, []);
 
-  useEffect(() => {
-    void load(date);
-  }, [date, load]);
-
-  // Refresh after saving a sale in the form.
+  // Initial load + refresh after saving a sale in the form.
   useFocusEffect(
     useCallback(() => {
       void load(date);
@@ -124,11 +120,7 @@ export default function RecordsScreen() {
       {loading ? (
         <ActivityIndicator size="large" color={colors.primary} testID="records-loading" />
       ) : visible.length === 0 ? (
-        <EmptyState
-          icon="scale"
-          title={t('records.noSalesForDay')}
-          body={t('records.emptyBody')}
-        />
+        <EmptyState icon="scale" title={t('records.noSalesForDay')} body={t('records.emptyBody')} />
       ) : (
         <View style={styles.list}>
           <View style={styles.totalCard} testID="records-day-total">
@@ -139,11 +131,7 @@ export default function RecordsScreen() {
             const person = sale.person_id ? people.get(sale.person_id) : undefined;
             return (
               <View key={sale.id} style={styles.row} testID={`records-row-${sale.id}`}>
-                <PersonAvatar
-                  name={person?.name ?? '?'}
-                  photoUrl={person?.photo_url}
-                  size={56}
-                />
+                <PersonAvatar name={person?.name ?? '?'} photoUrl={person?.photo_url} size={56} />
                 <View style={styles.rowText}>
                   <Text style={styles.rowName}>{person?.name ?? '?'}</Text>
                   <Text style={styles.rowSub}>

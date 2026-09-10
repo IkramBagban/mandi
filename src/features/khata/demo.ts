@@ -33,7 +33,15 @@ function entry(
 }
 
 const SEED_ENTRIES: KhataEntry[] = [
-  entry('demo-k1', 'demo-p1', addDaysISO(today, -2), 'credit', 5000, 'udhaar', 'sale:mosambi 120kg'),
+  entry(
+    'demo-k1',
+    'demo-p1',
+    addDaysISO(today, -2),
+    'credit',
+    5000,
+    'udhaar',
+    'sale:mosambi 120kg',
+  ),
   entry('demo-k2', 'demo-p1', today, 'payment', 2000, 'cash', null),
   entry('demo-k3', 'demo-p2', addDaysISO(today, -1), 'credit', 8500, 'udhaar', 'sale:santra 200kg'),
   entry('demo-k4', 'demo-p3', addDaysISO(today, -1), 'debit', 1200, 'udhaar', 'sale:pyaz advance'),
