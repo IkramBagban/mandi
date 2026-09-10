@@ -179,6 +179,9 @@ supabase/
   real rows — editable, deletable, never reseeded — and never run once env
   vars exist. Date keys (`todayKey`/`shiftDateKey`) and person filtering
   (`filterPeople`) are reused from the people-khata lane, not duplicated.
+  Seeded people use `farmer`/`seller`/`other` — the current `PersonFormType`
+  set (pre-khata `trader`/`labour` rows stay valid in the DB, but new drafts
+  can't use them).
 - **i18n**: new `sale.*`, `commodities.*`, `home.udhaari*`, `records.*` keys in
   all four locales (en/hi/mr/ur share the exact same key set — verify by
   flattening each JSON file and diffing the key lists before push).
