@@ -148,6 +148,33 @@ describe('Supabase-first with offline fallback (mocked client)', () => {
     await expect(getPerson(row.id)).resolves.toMatchObject({ name: 'Offline Ori' });
   });
 
+  it('surfaces loginRequired (not a silent local fork) on an RLS denial', async () => {
+    stubSignedInClient(() => ({
+      insert: jest.fn().mockReturnValue({
+        select: jest.fn().mockReturnValue({
+          single: jest.fn().mockResolvedValue({
+            data: null,
+            error: {
+              code: '42501',
+              message: 'new row violates row-level security policy for table "people"',
+            },
+          }),
+        }),
+      }),
+      select: jest.fn().mockReturnValue({
+        order: jest.fn().mockResolvedValue({ data: [], error: null }),
+      }),
+    }));
+
+    const failure = await createPerson(makeDraft({ name: 'Rls Rani' })).then(
+      () => null,
+      (error: unknown) => error,
+    );
+    expect(failure).toBeInstanceOf(RepoError);
+    expect((failure as RepoError).code).toBe('loginRequired');
+    await expect(listPeople()).resolves.toEqual([]);
+  });
+
   it('serves the cache when the server list fails but rows are mirrored', async () => {
     const cached = makePerson({ id: 'uuid_2', owner_id: 'owner_1' });
     stubSignedInClient(() => ({
@@ -179,11 +206,16 @@ describe('Supabase-first with offline fallback (mocked client)', () => {
     expect((failure as RepoError).code).toBe('failed');
   });
 
-  it('uses the local store when configured but signed out', async () => {
+  it('refuses the remote write with coded loginRequired when configured but signed out', async () => {
     stubSignedOutClient();
-    const row = await createPerson(makeDraft({ name: 'Local Lal' }));
-    expect(row.owner_id).toBe('local');
-    await expect(listPeople()).resolves.toHaveLength(1);
+    const failure = await createPerson(makeDraft({ name: 'Local Lal' })).then(
+      () => null,
+      (error: unknown) => error,
+    );
+    expect(failure).toBeInstanceOf(RepoError);
+    expect((failure as RepoError).code).toBe('loginRequired');
+    // Nothing was saved anywhere — the screen shows auth.loginRequired.
+    await expect(listPeople()).resolves.toEqual([]);
   });
 
   it('deletes through the server and clears the mirror', async () => {
