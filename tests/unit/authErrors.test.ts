@@ -27,6 +27,15 @@ describe('mapAuthErrorToKey — password paths', () => {
       'auth.errorPasswordTooShort',
     );
     expect(mapAuthErrorToKey(new Error('validation.phoneInvalid'))).toBe('validation.phoneInvalid');
+    expect(mapAuthErrorToKey(new Error('auth.errorSignupUnavailable'))).toBe(
+      'auth.errorSignupUnavailable',
+    );
+  });
+
+  it('maps already-registered to the login pointer', () => {
+    expect(mapAuthErrorToKey(new Error('User already registered'))).toBe(
+      'auth.errorAlreadyRegistered',
+    );
   });
 
   it('maps a missing OTP-verify session to loginRequired', () => {

@@ -5,6 +5,7 @@ import { getSupabase, isSupabaseConfigured } from '@/lib/supabase';
 import {
   setPassword as repoSetPassword,
   signInWithPassword as repoSignInWithPassword,
+  signUpWithPassword as repoSignUpWithPassword,
 } from '@/features/auth/repository';
 
 // Boundary mock: the repository only talks to Supabase through this wrapper.
@@ -70,6 +71,53 @@ describe('signInWithPassword', () => {
       (error: unknown) => error,
     );
     expect((failure as Error).message).toBe('Invalid login credentials');
+  });
+});
+
+describe('signUpWithPassword', () => {
+  it('signs up with the E.164 phone and returns the session user', async () => {
+    const signUp = jest
+      .fn()
+      .mockResolvedValue({ data: { user: USER, session: { access_token: 'tok' } }, error: null });
+    stubAuth({ signUp });
+
+    await expect(
+      repoSignUpWithPassword({ phone: '9812345678', password: 'mandi12' }),
+    ).resolves.toEqual({ id: OWNER_ID, phone: '+919812345678' });
+    expect(signUp).toHaveBeenCalledWith({ phone: '+919812345678', password: 'mandi12' });
+  });
+
+  it('throws the signup-unavailable key when confirmations are ON (no session issued)', async () => {
+    const signUp = jest
+      .fn()
+      .mockResolvedValue({ data: { user: USER, session: null }, error: null });
+    stubAuth({ signUp });
+
+    const failure = await repoSignUpWithPassword({
+      phone: '9812345678',
+      password: 'mandi12',
+    }).then(
+      () => null,
+      (error: unknown) => error,
+    );
+    expect((failure as Error).message).toBe('auth.errorSignupUnavailable');
+  });
+
+  it('propagates already-registered so the mapper can point at Login', async () => {
+    const signUp = jest.fn().mockResolvedValue({
+      data: { user: null, session: null },
+      error: new Error('User already registered'),
+    });
+    stubAuth({ signUp });
+
+    const failure = await repoSignUpWithPassword({
+      phone: '9812345678',
+      password: 'mandi12',
+    }).then(
+      () => null,
+      (error: unknown) => error,
+    );
+    expect((failure as Error).message).toBe('User already registered');
   });
 });
 
