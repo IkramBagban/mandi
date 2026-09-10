@@ -312,10 +312,10 @@ push + PR (siblings filter to main/develop/staging — mandi is one small
 app, so the gate is cheap), and production builds trigger on `v*` tags
 (siblings build preview on a staging-branch push).
 
-| Workflow                            | Trigger                                                                | What it does                                                                                          |
-| ----------------------------------- | ---------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------- |
-| `CI` (`.github/workflows/ci.yml`)   | every `push` + `pull_request`                                          | `npm ci` → `npm run lint` → `npm run typecheck` → `npm test` → `npx expo export --platform web` (build proof). Steps are sequential, so the first failure stops the job (fail-fast). |
-| `EAS builds` (`eas-deploy.yml`)     | manual (`Actions` → `EAS builds` → `Run workflow`, pick profile/platform) or pushing a `v*` tag | lint + typecheck gate, then `eas build --non-interactive`. Tags always build `production` / `android` (Play Store `.aab`); manual runs default to `preview` / `android` (installable `.apk`). |
+| Workflow                          | Trigger                                                                                         | What it does                                                                                                                                                                                  |
+| --------------------------------- | ----------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `CI` (`.github/workflows/ci.yml`) | every `push` + `pull_request`                                                                   | `npm ci` → `npm run lint` → `npm run typecheck` → `npm test` → `npx expo export --platform web` (build proof). Steps are sequential, so the first failure stops the job (fail-fast).          |
+| `EAS builds` (`eas-deploy.yml`)   | manual (`Actions` → `EAS builds` → `Run workflow`, pick profile/platform) or pushing a `v*` tag | lint + typecheck gate, then `eas build --non-interactive`. Tags always build `production` / `android` (Play Store `.aab`); manual runs default to `preview` / `android` (installable `.apk`). |
 
 ### Triggering builds
 
@@ -331,11 +331,11 @@ git tag v1.0.0 && git push origin v1.0.0
 
 GitHub repo → `Settings` → `Secrets and variables` → `Actions` → `New repository secret`:
 
-| Secret                          | Required for              | Notes                                                                                       |
-| ------------------------------- | ------------------------- | --------------------------------------------------------------------------------------------- |
-| `EXPO_TOKEN`                    | any EAS build             | Expo access token (`https://expo.dev/settings/access-tokens`). Also authenticates the Expo GitHub Action. |
-| `EXPO_PUBLIC_SUPABASE_URL`      | builds that need live data | Same value as `.env`. If unset, the build still succeeds — the app falls back to offline stubs. |
-| `EXPO_PUBLIC_SUPABASE_ANON_KEY` | builds that need live data | Anon/public key only — never the service role key. Same fallback behaviour as above.          |
+| Secret                          | Required for               | Notes                                                                                                     |
+| ------------------------------- | -------------------------- | --------------------------------------------------------------------------------------------------------- |
+| `EXPO_TOKEN`                    | any EAS build              | Expo access token (`https://expo.dev/settings/access-tokens`). Also authenticates the Expo GitHub Action. |
+| `EXPO_PUBLIC_SUPABASE_URL`      | builds that need live data | Same value as `.env`. If unset, the build still succeeds — the app falls back to offline stubs.           |
+| `EXPO_PUBLIC_SUPABASE_ANON_KEY` | builds that need live data | Anon/public key only — never the service role key. Same fallback behaviour as above.                      |
 
 One-time EAS linking (needs no secret in the repo): `npx eas-cli init`
 (or `eas init`) writes the Expo project ID into `app.json`
