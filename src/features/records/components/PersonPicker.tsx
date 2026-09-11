@@ -1,9 +1,9 @@
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { ActivityIndicator, Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
+import { ActivityIndicator, StyleSheet, Text, TextInput, View } from 'react-native';
 import { MaterialIcons } from '@expo/vector-icons';
 
-import { PersonAvatar } from '@/components';
+import { ListRow, PersonAvatar } from '@/components';
 import type { Person } from '@/features/people/types';
 import { colors, radii, spacing, touchTargets, typography } from '@/theme';
 
@@ -55,7 +55,7 @@ export function PersonPicker({ selected, onSelect, error }: PersonPickerProps) {
     <View style={styles.wrapper}>
       <Text style={styles.label}>{t('sale.person')}</Text>
       <View style={[styles.searchRow, error ? styles.searchError : null]}>
-        <MaterialIcons name="search" size={28} color={colors.textMuted} />
+        <MaterialIcons name="search" size={20} color={colors.textMuted} />
         <TextInput
           value={query}
           onChangeText={onQueryChange}
@@ -69,14 +69,14 @@ export function PersonPicker({ selected, onSelect, error }: PersonPickerProps) {
       </View>
       {error ? <Text style={styles.error}>{error}</Text> : null}
       {selected ? (
-        <View style={styles.selectedRow}>
-          <PersonAvatar name={selected.name} photoUrl={selected.photo_url} size={56} />
-          <View style={styles.selectedText}>
-            <Text style={styles.name}>{selected.name}</Text>
-            {selected.village ? <Text style={styles.village}>{selected.village}</Text> : null}
-          </View>
-          <MaterialIcons name="check-circle" size={32} color={colors.primary} />
-        </View>
+        <ListRow
+          avatar={<PersonAvatar name={selected.name} photoUrl={selected.photo_url} size={40} />}
+          title={selected.name}
+          subtitle={selected.village}
+          selected
+          right={<MaterialIcons name="check-circle" size={20} color={colors.primary} />}
+          testID={`sale-person-selected-${selected.id}`}
+        />
       ) : null}
       {loading ? (
         <ActivityIndicator size="large" color={colors.primary} testID="sale-person-loading" />
@@ -85,20 +85,14 @@ export function PersonPicker({ selected, onSelect, error }: PersonPickerProps) {
           {results
             .filter((p) => p.id !== selected?.id)
             .map((person) => (
-              <Pressable
+              <ListRow
                 key={person.id}
+                avatar={<PersonAvatar name={person.name} photoUrl={person.photo_url} size={40} />}
+                title={person.name}
+                subtitle={person.village}
                 onPress={() => onSelect(person)}
-                accessibilityRole="radio"
-                accessibilityLabel={person.name}
                 testID={`sale-person-${person.id}`}
-                style={({ pressed }) => [styles.row, pressed && styles.pressed]}
-              >
-                <PersonAvatar name={person.name} photoUrl={person.photo_url} size={56} />
-                <View style={styles.rowText}>
-                  <Text style={styles.name}>{person.name}</Text>
-                  {person.village ? <Text style={styles.village}>{person.village}</Text> : null}
-                </View>
-              </Pressable>
+              />
             ))}
         </View>
       )}
@@ -119,11 +113,11 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     gap: spacing.sm,
     minHeight: touchTargets.primary,
-    borderWidth: 2,
+    borderWidth: 1,
     borderColor: colors.border,
     borderRadius: radii.md,
     paddingHorizontal: spacing.md,
-    backgroundColor: colors.card,
+    backgroundColor: colors.surface,
   },
   searchError: {
     borderColor: colors.danger,
@@ -138,48 +132,7 @@ const styles = StyleSheet.create({
     ...typography.caption,
     color: colors.danger,
   },
-  selectedRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: spacing.md,
-    minHeight: 72,
-    borderWidth: 2,
-    borderColor: colors.primary,
-    borderRadius: radii.md,
-    paddingHorizontal: spacing.md,
-    paddingVertical: spacing.sm,
-    backgroundColor: colors.primarySoft,
-  },
-  selectedText: {
-    flex: 1,
-  },
   list: {
     gap: spacing.sm,
-  },
-  row: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: spacing.md,
-    minHeight: 72,
-    borderWidth: 2,
-    borderColor: colors.border,
-    borderRadius: radii.md,
-    paddingHorizontal: spacing.md,
-    paddingVertical: spacing.sm,
-    backgroundColor: colors.card,
-  },
-  pressed: {
-    opacity: 0.8,
-  },
-  rowText: {
-    flex: 1,
-  },
-  name: {
-    ...typography.bodyBold,
-    color: colors.text,
-  },
-  village: {
-    ...typography.caption,
-    color: colors.textMuted,
   },
 });

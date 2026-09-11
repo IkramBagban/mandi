@@ -11,8 +11,9 @@ interface PersonPickerProps {
 }
 
 /**
- * Horizontal photo-first person picker for the Khata tab: big avatars with
- * names underneath, selected face ringed in brand green. 72dp+ targets.
+ * Horizontal photo-first person picker for the Khata tab: compact avatars
+ * with names underneath, selected face ringed in brand green. Each item is
+ * a 44dp+ target; names truncate to two lines.
  */
 export function PersonPicker({ people, selectedId, onSelect }: PersonPickerProps) {
   return (
@@ -35,7 +36,7 @@ export function PersonPicker({ people, selectedId, onSelect }: PersonPickerProps
             style={styles.item}
           >
             <View style={[styles.ring, active && styles.ringActive]}>
-              <PersonAvatar name={item.name} photoUrl={item.photo_url} size={72} />
+              <PersonAvatar name={item.name} photoUrl={item.photo_url} size={52} />
             </View>
             <Text style={[styles.name, active && styles.nameActive]} numberOfLines={2}>
               {item.name}
@@ -53,14 +54,14 @@ const styles = StyleSheet.create({
     paddingVertical: spacing.sm,
   },
   item: {
-    width: 88,
-    minHeight: touchTargets.avatar + 40,
+    width: 64,
+    minHeight: touchTargets.avatar + 32,
     alignItems: 'center',
     gap: spacing.xs,
   },
   ring: {
     borderRadius: radii.full,
-    borderWidth: 3,
+    borderWidth: 2,
     borderColor: 'transparent',
     padding: 2,
   },
