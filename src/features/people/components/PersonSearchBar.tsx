@@ -9,12 +9,12 @@ interface PersonSearchBarProps {
   onChange: (text: string) => void;
 }
 
-/** Big search box: icon + huge text + one-tap clear. 56dp minimum. */
+/** Compact search box: icon + text + one-tap clear. 48dp minimum. */
 export function PersonSearchBar({ value, onChange }: PersonSearchBarProps) {
   const { t } = useTranslation();
   return (
     <View style={styles.row}>
-      <MaterialIcons name="search" size={28} color={colors.textMuted} />
+      <MaterialIcons name="search" size={20} color={colors.textMuted} />
       <TextInput
         value={value}
         onChangeText={onChange}
@@ -47,10 +47,10 @@ const styles = StyleSheet.create({
     gap: spacing.sm,
     minHeight: touchTargets.primary,
     paddingHorizontal: spacing.md,
-    borderRadius: radii.full,
-    borderWidth: 2,
+    borderRadius: radii.md,
+    borderWidth: 1,
     borderColor: colors.border,
-    backgroundColor: colors.card,
+    backgroundColor: colors.surface,
   },
   input: {
     flex: 1,

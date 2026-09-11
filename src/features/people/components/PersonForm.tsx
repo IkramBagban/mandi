@@ -25,7 +25,7 @@ const TYPE_ICONS = {
 } as const satisfies Record<PersonFormType, keyof typeof MaterialIcons.glyphMap>;
 
 /**
- * Add-person form: photo first (camera/gallery, 120dp preview), then name,
+ * Add-person form: photo first (camera/gallery, 88dp preview), then name,
  * phone (+91), role chips, village, notes. One primary action: Save.
  * The screen owns persistence (photo upload + repository) via `onSubmit`.
  */
@@ -88,7 +88,7 @@ export function PersonForm({ onSubmit, onCancel, submitting }: PersonFormProps) 
   return (
     <View style={styles.form}>
       <View style={styles.photoSection}>
-        <PersonAvatar name={name.trim() || '?'} photoUrl={photoUri} size={120} />
+        <PersonAvatar name={name.trim() || '?'} photoUrl={photoUri} size={88} />
         <Text style={styles.photoLabel}>{t('people.photoLabel')}</Text>
         <View style={styles.photoButtons}>
           <Pressable
@@ -99,7 +99,7 @@ export function PersonForm({ onSubmit, onCancel, submitting }: PersonFormProps) 
             testID="person-photo-camera"
             style={({ pressed }) => [styles.photoButton, pressed && styles.pressed]}
           >
-            <MaterialIcons name="photo-camera" size={28} color={colors.primary} />
+            <MaterialIcons name="photo-camera" size={20} color={colors.primary} />
             <Text style={styles.photoButtonLabel}>{t('people.photoTake')}</Text>
           </Pressable>
           <Pressable
@@ -110,7 +110,7 @@ export function PersonForm({ onSubmit, onCancel, submitting }: PersonFormProps) 
             testID="person-photo-gallery"
             style={({ pressed }) => [styles.photoButton, pressed && styles.pressed]}
           >
-            <MaterialIcons name="photo-library" size={28} color={colors.primary} />
+            <MaterialIcons name="photo-library" size={20} color={colors.primary} />
             <Text style={styles.photoButtonLabel}>{t('people.photoChoose')}</Text>
           </Pressable>
         </View>
@@ -222,15 +222,15 @@ const styles = StyleSheet.create({
     gap: spacing.md,
   },
   photoButton: {
-    minHeight: touchTargets.primary,
-    minWidth: 140,
+    minHeight: touchTargets.minimum,
+    minWidth: 120,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
     gap: spacing.sm,
-    paddingHorizontal: spacing.lg,
+    paddingHorizontal: spacing.md,
     borderRadius: radii.full,
-    borderWidth: 2,
+    borderWidth: 1,
     borderColor: colors.primary,
     backgroundColor: colors.primarySoft,
   },

@@ -1,10 +1,7 @@
-import { MaterialIcons } from '@expo/vector-icons';
 import { useTranslation } from 'react-i18next';
-import { Pressable, StyleSheet, Text, View } from 'react-native';
 
-import { PersonAvatar } from '@/components';
+import { ListRow, PersonAvatar } from '@/components';
 import type { PersonType } from '@/lib/database.types';
-import { colors, radii, spacing, typography } from '@/theme';
 
 import type { Person } from '../types';
 
@@ -38,78 +35,22 @@ function typeLabelKey(type: PersonType): TypeLabelKey {
 }
 
 /**
- * One row in the people list: huge photo first, name big, role + village
- * small. Whole row (88dp+) is the touch target — one tap opens the person.
+ * One row in the people list: photo first, name + role/village/phone in two
+ * compact lines. Built on the shared `ListRow` — one tap opens the person.
  */
 export function PersonCard({ person, onPress }: { person: Person; onPress: () => void }) {
   const { t } = useTranslation();
-  const meta = [t(typeLabelKey(person.type)), person.village].filter(Boolean).join(' · ');
+  const meta = [t(typeLabelKey(person.type)), person.village, person.phone]
+    .filter(Boolean)
+    .join(' · ');
   return (
-    <Pressable
+    <ListRow
+      avatar={<PersonAvatar name={person.name} photoUrl={person.photo_url} size={40} />}
+      title={person.name}
+      subtitle={meta || null}
+      chevron
       onPress={onPress}
-      accessibilityRole="button"
-      accessibilityLabel={person.name}
       testID={`person-card-${person.id}`}
-      style={({ pressed }) => [styles.card, pressed && styles.pressed]}
-    >
-      <PersonAvatar name={person.name} photoUrl={person.photo_url} size={72} />
-      <View style={styles.texts}>
-        <Text style={styles.name} numberOfLines={1}>
-          {person.name}
-        </Text>
-        {meta ? (
-          <Text style={styles.meta} numberOfLines={1}>
-            {meta}
-          </Text>
-        ) : null}
-        {person.phone ? (
-          <View style={styles.phoneRow}>
-            <MaterialIcons name="call" size={16} color={colors.textMuted} />
-            <Text style={styles.phone}>{person.phone}</Text>
-          </View>
-        ) : null}
-      </View>
-      <MaterialIcons name="chevron-right" size={32} color={colors.textMuted} />
-    </Pressable>
+    />
   );
 }
-
-const styles = StyleSheet.create({
-  card: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: spacing.md,
-    minHeight: 96,
-    padding: spacing.md,
-    borderRadius: radii.lg,
-    borderWidth: 2,
-    borderColor: colors.border,
-    backgroundColor: colors.card,
-  },
-  pressed: {
-    opacity: 0.8,
-    borderColor: colors.primary,
-  },
-  texts: {
-    flex: 1,
-    gap: 2,
-  },
-  name: {
-    ...typography.bodyBold,
-    fontSize: 20,
-    color: colors.text,
-  },
-  meta: {
-    ...typography.caption,
-    color: colors.textMuted,
-  },
-  phoneRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 4,
-  },
-  phone: {
-    ...typography.caption,
-    color: colors.text,
-  },
-});
