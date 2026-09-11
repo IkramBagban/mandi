@@ -4,7 +4,7 @@ import { Pressable, StyleSheet, Text, View } from 'react-native';
 
 import { formatDate, formatINR } from '@/lib/format';
 import { useSettingsStore } from '@/store/settings';
-import { colors, radii, spacing, touchTargets, typography } from '@/theme';
+import { colors, radii, shadows, spacing, touchTargets, typography } from '@/theme';
 
 import { parseDateKey, type KhataEntry } from '../types';
 
@@ -21,8 +21,8 @@ const KIND_STYLE = {
 } as const;
 
 /**
- * One khata entry: kind icon first, big colored amount, method + note small.
- * Edit/delete are 48dp icon targets on the right.
+ * One khata entry: kind icon first, colored amount, method + note small.
+ * Edit/delete are 44dp icon targets on the right.
  */
 export function EntryRow({ entry, onEdit, onDelete }: EntryRowProps) {
   const { t } = useTranslation();
@@ -45,7 +45,7 @@ export function EntryRow({ entry, onEdit, onDelete }: EntryRowProps) {
   return (
     <View style={styles.row} testID={`entry-row-${entry.id}`}>
       <View style={[styles.iconCircle, { backgroundColor: style.bg }]}>
-        <MaterialIcons name={style.icon} size={28} color={style.fg} />
+        <MaterialIcons name={style.icon} size={22} color={style.fg} />
       </View>
       <View style={styles.middle}>
         <Text style={styles.kind} numberOfLines={1}>
@@ -72,7 +72,7 @@ export function EntryRow({ entry, onEdit, onDelete }: EntryRowProps) {
           testID={`entry-edit-${entry.id}`}
           style={styles.action}
         >
-          <MaterialIcons name="edit" size={24} color={colors.primary} />
+          <MaterialIcons name="edit" size={20} color={colors.primary} />
         </Pressable>
         <Pressable
           onPress={() => onDelete(entry)}
@@ -81,7 +81,7 @@ export function EntryRow({ entry, onEdit, onDelete }: EntryRowProps) {
           testID={`entry-delete-${entry.id}`}
           style={styles.action}
         >
-          <MaterialIcons name="delete-outline" size={24} color={colors.danger} />
+          <MaterialIcons name="delete-outline" size={20} color={colors.danger} />
         </Pressable>
       </View>
     </View>
@@ -93,18 +93,19 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: spacing.sm,
-    minHeight: 88,
+    minHeight: 72,
     padding: spacing.sm,
-    paddingLeft: spacing.md,
-    borderRadius: radii.lg,
-    borderWidth: 2,
-    borderColor: colors.border,
+    paddingHorizontal: spacing.md,
+    borderRadius: radii.md,
+    borderWidth: 1,
+    borderColor: colors.hairline,
     backgroundColor: colors.card,
+    ...shadows.card,
   },
   iconCircle: {
-    width: 56,
-    height: 56,
-    borderRadius: 28,
+    width: 40,
+    height: 40,
+    borderRadius: 20,
     alignItems: 'center',
     justifyContent: 'center',
   },
@@ -125,8 +126,7 @@ const styles = StyleSheet.create({
     color: colors.text,
   },
   amount: {
-    ...typography.bodyBold,
-    fontSize: 19,
+    ...typography.heading,
   },
   actions: {
     flexDirection: 'row',

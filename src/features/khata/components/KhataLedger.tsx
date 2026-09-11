@@ -134,7 +134,7 @@ export function KhataLedger({
     return (
       <View style={styles.center}>
         <View style={styles.errorCircle}>
-          <MaterialIcons name="signal-wifi-off" size={48} color={colors.primary} />
+          <MaterialIcons name="signal-wifi-off" size={36} color={colors.primary} />
         </View>
         <Text style={styles.errorTitle}>{t(errorKey)}</Text>
         <BigButton label={t('common.retry')} icon="refresh" onPress={onRetry} />
@@ -236,9 +236,9 @@ const styles = StyleSheet.create({
     color: colors.textMuted,
   },
   errorCircle: {
-    width: 96,
-    height: 96,
-    borderRadius: 48,
+    width: 72,
+    height: 72,
+    borderRadius: 36,
     backgroundColor: colors.primarySoft,
     alignItems: 'center',
     justifyContent: 'center',

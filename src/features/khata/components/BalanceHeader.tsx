@@ -4,7 +4,7 @@ import { StyleSheet, Text, View } from 'react-native';
 
 import { formatINR } from '@/lib/format';
 import { useSettingsStore } from '@/store/settings';
-import { colors, radii, spacing, typography } from '@/theme';
+import { colors, radii, shadows, spacing, typography } from '@/theme';
 
 interface BalanceHeaderProps {
   balance: number;
@@ -12,8 +12,9 @@ interface BalanceHeaderProps {
 }
 
 /**
- * Lifetime balance in huge numerals: green = they owe you, red = you owe
- * them, neutral = all clear. The single most important number on the screen.
+ * Lifetime balance in hero numerals: green = they owe you, red = you owe
+ * them, neutral = all clear. The single most important number on the
+ * screen — deliberately the largest type left in the app.
  */
 export function BalanceHeader({ balance, testID }: BalanceHeaderProps) {
   const { t } = useTranslation();
@@ -30,7 +31,7 @@ export function BalanceHeader({ balance, testID }: BalanceHeaderProps) {
           name={
             state === 'clear' ? 'check-circle' : state === 'in' ? 'arrow-downward' : 'arrow-upward'
           }
-          size={28}
+          size={22}
           color={state === 'in' ? colors.credit : state === 'out' ? colors.debit : colors.textMuted}
         />
         <Text style={styles.state}>
@@ -48,12 +49,13 @@ export function BalanceHeader({ balance, testID }: BalanceHeaderProps) {
 const styles = StyleSheet.create({
   card: {
     alignItems: 'center',
-    gap: spacing.sm,
+    gap: spacing.xs,
     padding: spacing.lg,
-    borderRadius: radii.lg,
-    borderWidth: 2,
-    borderColor: colors.border,
+    borderRadius: radii.md,
+    borderWidth: 1,
+    borderColor: colors.hairline,
     backgroundColor: colors.card,
+    ...shadows.card,
   },
   title: {
     ...typography.bodyBold,
@@ -76,7 +78,6 @@ const styles = StyleSheet.create({
   },
   state: {
     ...typography.heading,
-    fontSize: 20,
     color: colors.text,
   },
 });

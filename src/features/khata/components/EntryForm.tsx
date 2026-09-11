@@ -140,7 +140,7 @@ export function EntryForm({ mode, initial, submitting, onSubmit, onCancel }: Ent
             testID="entry-date-prev"
             style={({ pressed }) => [styles.stepper, pressed && styles.pressed]}
           >
-            <MaterialIcons name="chevron-left" size={32} color={colors.primary} />
+            <MaterialIcons name="chevron-left" size={24} color={colors.primary} />
           </Pressable>
           <View style={styles.dateCenter}>
             <Text style={styles.dateText}>{formatDate(parseDateKey(date), language)}</Text>
@@ -160,7 +160,7 @@ export function EntryForm({ mode, initial, submitting, onSubmit, onCancel }: Ent
           >
             <MaterialIcons
               name="chevron-right"
-              size={32}
+              size={24}
               color={date >= today ? colors.disabled : colors.primary}
             />
           </Pressable>
@@ -200,8 +200,8 @@ const styles = StyleSheet.create({
   form: {
     gap: spacing.md,
     padding: spacing.md,
-    borderRadius: radii.lg,
-    borderWidth: 2,
+    borderRadius: radii.md,
+    borderWidth: 1,
     borderColor: colors.primary,
     backgroundColor: colors.primarySoft,
   },
@@ -222,12 +222,12 @@ const styles = StyleSheet.create({
     gap: spacing.sm,
   },
   stepper: {
-    minWidth: touchTargets.primary,
-    minHeight: touchTargets.primary,
+    minWidth: touchTargets.minimum,
+    minHeight: touchTargets.minimum,
     alignItems: 'center',
     justifyContent: 'center',
     borderRadius: radii.full,
-    borderWidth: 2,
+    borderWidth: 1,
     borderColor: colors.primary,
     backgroundColor: colors.card,
   },
@@ -244,12 +244,11 @@ const styles = StyleSheet.create({
     paddingVertical: spacing.sm,
     borderRadius: radii.md,
     backgroundColor: colors.card,
-    borderWidth: 2,
+    borderWidth: 1,
     borderColor: colors.border,
   },
   dateText: {
-    ...typography.bodyBold,
-    fontSize: 20,
+    ...typography.heading,
     color: colors.text,
   },
   todayTag: {
