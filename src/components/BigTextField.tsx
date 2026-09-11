@@ -18,7 +18,7 @@ interface BigTextFieldProps {
 }
 
 /**
- * Labeled text entry with a 56dp+ target and inline error — the sibling of
+ * Labeled text entry with a 52dp target and inline error — the sibling of
  * `AmountInput` for names, villages and notes. Always translated: pass
  * `t('…')` for every string prop.
  */
@@ -82,7 +82,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     gap: spacing.sm,
     minHeight: touchTargets.primary,
-    borderWidth: 2,
+    borderWidth: 1,
     borderColor: colors.border,
     borderRadius: radii.md,
     paddingHorizontal: spacing.md,
@@ -106,7 +106,7 @@ const styles = StyleSheet.create({
     paddingVertical: spacing.sm,
   },
   inputMulti: {
-    minHeight: 88,
+    minHeight: 72,
   },
   error: {
     ...typography.caption,

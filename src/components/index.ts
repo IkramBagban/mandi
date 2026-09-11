@@ -4,5 +4,6 @@ export { BigTextField } from './BigTextField';
 export { ChipSelect } from './ChipSelect';
 export type { ChipOption } from './ChipSelect';
 export { EmptyState } from './EmptyState';
+export { ListRow } from './ListRow';
 export { PersonAvatar } from './PersonAvatar';
 export { Screen, ScreenSpacer } from './Screen';

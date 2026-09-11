@@ -6,14 +6,14 @@ import { colors } from '@/theme';
 interface PersonAvatarProps {
   name: string;
   photoUrl?: string | null;
-  /** Diameter in dp. Defaults to the 72dp touch-friendly size. */
+  /** Diameter in dp. List rows use 40; pickers/detail use 48+. */
   size?: number;
 }
 
 const FALLBACK_COLORS = ['#1B7A43', '#6A3FB5', '#B26A00', '#0E6E8C', '#A1346B'] as const;
 
 /** Photo-first identity: real photo when present, else big readable initials. */
-export function PersonAvatar({ name, photoUrl, size = 72 }: PersonAvatarProps) {
+export function PersonAvatar({ name, photoUrl, size = 44 }: PersonAvatarProps) {
   if (photoUrl) {
     return (
       <Image
@@ -61,8 +61,8 @@ function hash(value: string): number {
 const styles = StyleSheet.create({
   photo: {
     backgroundColor: colors.surface,
-    borderWidth: 2,
-    borderColor: colors.border,
+    borderWidth: 1,
+    borderColor: colors.hairline,
   },
   fallback: {
     alignItems: 'center',

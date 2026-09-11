@@ -13,8 +13,10 @@ interface AmountInputProps {
 }
 
 /**
- * Money/quantity entry: huge numerals, numeric keyboard only, inline error.
- * Always pair with `validateAmount` / `validateQuantity` from `@/lib/validation`.
+ * Money/quantity entry: large (24sp) numerals with a numeric keyboard and
+ * inline error. Big enough to read at arm's length, compact enough to keep
+ * the form on screen. Always pair with `validateAmount` / `validateQuantity`
+ * from `@/lib/validation`.
  */
 export function AmountInput({
   value,
@@ -59,7 +61,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     gap: spacing.sm,
     minHeight: touchTargets.primary,
-    borderWidth: 2,
+    borderWidth: 1,
     borderColor: colors.border,
     borderRadius: radii.md,
     paddingHorizontal: spacing.md,

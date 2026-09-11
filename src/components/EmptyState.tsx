@@ -17,7 +17,7 @@ export function EmptyState({ icon, title, body, actionLabel, onAction }: EmptySt
   return (
     <View style={styles.container}>
       <View style={styles.iconCircle}>
-        <MaterialIcons name={icon} size={56} color={colors.primary} />
+        <MaterialIcons name={icon} size={40} color={colors.primary} />
       </View>
       <Text style={styles.title}>{title}</Text>
       <Text style={styles.body}>{body}</Text>
@@ -37,9 +37,9 @@ const styles = StyleSheet.create({
     paddingVertical: spacing.xxl,
   },
   iconCircle: {
-    width: 120,
-    height: 120,
-    borderRadius: 60,
+    width: 88,
+    height: 88,
+    borderRadius: 44,
     backgroundColor: colors.primarySoft,
     alignItems: 'center',
     justifyContent: 'center',

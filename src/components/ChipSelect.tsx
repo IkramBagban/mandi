@@ -18,8 +18,9 @@ interface ChipSelectProps<T extends string> {
 }
 
 /**
- * Big single-choice chips (person type, entry kind, pay method). Every chip
- * is ≥48dp with icon + label so low-literacy users tap pictures, not text.
+ * Single-choice chips (person type, entry kind, pay method). Every chip is a
+ * 44dp+ target with icon + label so low-literacy users tap pictures, not
+ * text — without the old oversized pills.
  */
 export function ChipSelect<T extends string>({
   label,
@@ -46,7 +47,7 @@ export function ChipSelect<T extends string>({
             >
               <MaterialIcons
                 name={option.icon}
-                size={26}
+                size={20}
                 color={active ? colors.background : colors.primary}
               />
               <Text style={[styles.chipLabel, active && styles.chipLabelActive]}>
@@ -82,7 +83,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: spacing.md,
     paddingVertical: spacing.sm,
     borderRadius: radii.full,
-    borderWidth: 2,
+    borderWidth: 1,
     borderColor: colors.primary,
     backgroundColor: colors.card,
     flexGrow: 1,

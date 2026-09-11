@@ -17,8 +17,8 @@ interface BigButtonProps {
 }
 
 /**
- * The one primary action per screen. Always ≥60dp tall with icon + big label
- * so it is unmissable for low-literacy users.
+ * The one primary action per screen. 52dp tall with icon + label so it stays
+ * unmissable for low-literacy users without dominating the layout.
  */
 export function BigButton({
   label,
@@ -47,7 +47,7 @@ export function BigButton({
       {icon ? (
         <MaterialIcons
           name={icon}
-          size={28}
+          size={20}
           color={variant === 'secondary' ? colors.primary : colors.background}
         />
       ) : null}
@@ -59,9 +59,9 @@ export function BigButton({
 const styles = StyleSheet.create({
   base: {
     minHeight: touchTargets.primary,
-    borderRadius: radii.lg,
+    borderRadius: radii.md,
     paddingHorizontal: spacing.lg,
-    paddingVertical: spacing.md,
+    paddingVertical: spacing.sm,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
@@ -72,7 +72,7 @@ const styles = StyleSheet.create({
   },
   secondary: {
     backgroundColor: colors.primarySoft,
-    borderWidth: 2,
+    borderWidth: 1,
     borderColor: colors.primary,
   },
   danger: {
