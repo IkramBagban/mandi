@@ -68,7 +68,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     gap: spacing.sm,
     minHeight: touchTargets.primary,
-    borderWidth: 2,
+    borderWidth: 1,
     borderColor: colors.border,
     borderRadius: radii.md,
     paddingHorizontal: spacing.md,
@@ -78,18 +78,18 @@ const styles = StyleSheet.create({
     borderColor: colors.danger,
   },
   prefix: {
-    ...typography.amount,
+    ...typography.heading,
     color: colors.textMuted,
   },
   input: {
     flex: 1,
-    ...typography.amount,
+    ...typography.heading,
     color: colors.text,
     paddingVertical: spacing.sm,
     fontVariant: ['tabular-nums'],
   },
   error: {
-    ...typography.body,
+    ...typography.caption,
     color: colors.danger,
   },
 });

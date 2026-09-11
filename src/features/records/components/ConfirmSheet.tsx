@@ -57,7 +57,7 @@ export function ConfirmSheet({
           <Text style={styles.title}>{t('sale.review')}</Text>
 
           <View style={styles.personRow}>
-            <PersonAvatar name={person?.name ?? '?'} photoUrl={person?.photo_url} size={64} />
+            <PersonAvatar name={person?.name ?? '?'} photoUrl={person?.photo_url} size={48} />
             <View style={styles.personText}>
               <Text style={styles.personName}>{person?.name}</Text>
               <Text style={styles.personSub}>
@@ -88,7 +88,7 @@ export function ConfirmSheet({
 
           {error ? (
             <View style={styles.errorBox}>
-              <MaterialIcons name="error" size={24} color={colors.danger} />
+              <MaterialIcons name="error" size={20} color={colors.danger} />
               <Text style={styles.errorText}>{error}</Text>
             </View>
           ) : null}
@@ -152,8 +152,8 @@ const styles = StyleSheet.create({
     color: colors.textMuted,
   },
   thumb: {
-    width: 64,
-    height: 64,
+    width: 48,
+    height: 48,
     borderRadius: radii.md,
     backgroundColor: colors.surface,
   },
@@ -181,7 +181,7 @@ const styles = StyleSheet.create({
     color: colors.debit,
   },
   divider: {
-    height: 2,
+    height: 1,
     backgroundColor: colors.border,
   },
   netLabel: {

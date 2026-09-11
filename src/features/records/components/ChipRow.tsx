@@ -1,6 +1,6 @@
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 
-import { colors, radii, spacing, typography } from '@/theme';
+import { colors, radii, spacing, touchTargets, typography } from '@/theme';
 
 export interface ChipOption {
   value: string;
@@ -16,7 +16,7 @@ interface ChipRowProps {
 }
 
 /**
- * Big wrap-grid of single-select chips. 56dp tall each — thumb-friendly for
+ * Wrap-grid of single-select chips. 44dp tall each — thumb-friendly for
  * commodity / quality picking with zero typing.
  */
 export function ChipRow({ label, options, selected, onSelect, testIDPrefix }: ChipRowProps) {
@@ -63,12 +63,12 @@ const styles = StyleSheet.create({
     gap: spacing.sm,
   },
   chip: {
-    minHeight: 56,
-    minWidth: 72,
+    minHeight: touchTargets.minimum,
+    minWidth: 64,
     paddingHorizontal: spacing.md,
     paddingVertical: spacing.sm,
-    borderRadius: radii.lg,
-    borderWidth: 2,
+    borderRadius: radii.md,
+    borderWidth: 1,
     borderColor: colors.border,
     backgroundColor: colors.card,
     alignItems: 'center',

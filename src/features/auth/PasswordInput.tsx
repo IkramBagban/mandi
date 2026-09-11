@@ -15,12 +15,12 @@ interface PasswordInputProps {
 }
 
 /**
- * Password field with a big show/hide eye.
+ * Password field with a show/hide eye.
  *
- * Low-literacy users mistype blind passwords constantly, so the toggle is a
- * full 48dp+ thumb target and showing the password is one tap away. The hint
- * (`auth.passwordHint`) states the only rule — 6+ characters, digits alone
- * are fine — so nobody invents stricter rules than exist.
+ * Low-literacy users mistype blind passwords constantly, so the toggle stays
+ * a full 44dp+ thumb target and showing the password is one tap away. The
+ * hint (`auth.passwordHint`) states the only rule — 6+ characters, digits
+ * alone are fine — so nobody invents stricter rules than exist.
  */
 export function PasswordInput({ value, onChange, error, autoFocus, testID }: PasswordInputProps) {
   const { t } = useTranslation();
@@ -56,7 +56,7 @@ export function PasswordInput({ value, onChange, error, autoFocus, testID }: Pas
         >
           <MaterialIcons
             name={visible ? 'visibility-off' : 'visibility'}
-            size={28}
+            size={22}
             color={colors.primary}
           />
         </Pressable>
@@ -80,7 +80,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     gap: spacing.xs,
     minHeight: touchTargets.primary,
-    borderWidth: 2,
+    borderWidth: 1,
     borderColor: colors.border,
     borderRadius: radii.md,
     paddingHorizontal: spacing.md,
@@ -91,7 +91,7 @@ const styles = StyleSheet.create({
   },
   input: {
     flex: 1,
-    ...typography.amount,
+    ...typography.heading,
     color: colors.text,
     paddingVertical: spacing.sm,
   },
@@ -105,7 +105,7 @@ const styles = StyleSheet.create({
     opacity: 0.7,
   },
   error: {
-    ...typography.body,
+    ...typography.caption,
     color: colors.danger,
   },
   hint: {

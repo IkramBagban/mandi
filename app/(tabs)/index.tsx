@@ -4,7 +4,7 @@ import { router, useFocusEffect } from 'expo-router';
 import { ActivityIndicator, StyleSheet, Text, View } from 'react-native';
 import { MaterialIcons } from '@expo/vector-icons';
 
-import { BigButton, PersonAvatar, Screen } from '@/components';
+import { BigButton, ListRow, PersonAvatar, Screen } from '@/components';
 import { listAllEntries } from '@/features/khata/repository';
 import { summarizeUdhaari, type UdhaariSummary } from '@/features/khata/udhaari';
 import { searchPeople } from '@/features/records/people';
@@ -12,7 +12,7 @@ import { todayKey } from '@/features/khata/types';
 import { formatINR } from '@/lib/format';
 import { RepoError } from '@/lib/offline';
 import { useSettingsStore } from '@/store/settings';
-import { colors, radii, spacing, typography } from '@/theme';
+import { colors, radii, shadows, spacing, typography } from '@/theme';
 
 /**
  * Home: Udhaari dashboard on top (computed ONLY from khata_entries), then the
@@ -70,7 +70,7 @@ export default function HomeScreen() {
           <View style={styles.cards}>
             <View style={[styles.card, styles.collectCard]}>
               <View style={styles.cardHead}>
-                <MaterialIcons name="arrow-downward" size={28} color={colors.credit} />
+                <MaterialIcons name="arrow-downward" size={20} color={colors.credit} />
                 <Text style={styles.cardLabel}>{t('home.toCollect')}</Text>
               </View>
               <Text style={[styles.cardValue, styles.collectValue]} testID="home-to-collect">
@@ -79,7 +79,7 @@ export default function HomeScreen() {
             </View>
             <View style={[styles.card, styles.payCard]}>
               <View style={styles.cardHead}>
-                <MaterialIcons name="arrow-upward" size={28} color={colors.debit} />
+                <MaterialIcons name="arrow-upward" size={20} color={colors.debit} />
                 <Text style={styles.cardLabel}>{t('home.toPay')}</Text>
               </View>
               <Text style={[styles.cardValue, styles.payValue]} testID="home-to-pay">
@@ -89,7 +89,7 @@ export default function HomeScreen() {
           </View>
 
           <View style={styles.todayStrip} testID="home-today-collection">
-            <MaterialIcons name="payments" size={32} color={colors.primaryDark} />
+            <MaterialIcons name="payments" size={22} color={colors.primaryDark} />
             <Text style={styles.todayLabel}>{t('home.todayIn')}</Text>
             <Text style={styles.todayValue}>{formatINR(summary.todayCollection, language)}</Text>
           </View>
@@ -98,25 +98,25 @@ export default function HomeScreen() {
             <View style={styles.debtors}>
               <Text style={styles.debtorsLabel}>{t('home.topDebtors')}</Text>
               {summary.debtors.map(({ person, balance }) => (
-                <View key={person.id} style={styles.debtorRow}>
-                  <PersonAvatar name={person.name} photoUrl={person.photo_url} size={56} />
-                  <Text style={styles.debtorName} numberOfLines={1}>
-                    {person.name}
-                  </Text>
-                  <Text style={styles.debtorAmount}>{formatINR(balance, language)}</Text>
-                </View>
+                <ListRow
+                  key={person.id}
+                  avatar={<PersonAvatar name={person.name} photoUrl={person.photo_url} size={40} />}
+                  title={person.name}
+                  subtitle={null}
+                  right={<Text style={styles.debtorAmount}>{formatINR(balance, language)}</Text>}
+                />
               ))}
             </View>
           ) : null}
         </View>
       ) : loadError ? (
         <View style={styles.errorBox} testID="home-error">
-          <MaterialIcons name="cloud-off" size={40} color={colors.danger} />
+          <MaterialIcons name="cloud-off" size={32} color={colors.danger} />
           <Text style={styles.errorText}>{loadError}</Text>
         </View>
       ) : (
         <View style={styles.clearBox} testID="home-no-debtors">
-          <MaterialIcons name="check-circle" size={48} color={colors.primary} />
+          <MaterialIcons name="check-circle" size={32} color={colors.primary} />
           <Text style={styles.clearText}>{t('home.noDebtors')}</Text>
         </View>
       )}
@@ -145,8 +145,8 @@ export default function HomeScreen() {
 
 const styles = StyleSheet.create({
   header: {
-    gap: spacing.xs,
-    paddingVertical: spacing.md,
+    gap: 2,
+    paddingVertical: spacing.sm,
   },
   title: {
     ...typography.title,
@@ -157,22 +157,23 @@ const styles = StyleSheet.create({
     color: colors.textMuted,
   },
   sectionLabel: {
-    ...typography.heading,
-    color: colors.text,
+    ...typography.label,
+    color: colors.textMuted,
   },
   dash: {
-    gap: spacing.md,
+    gap: spacing.sm,
   },
   cards: {
     flexDirection: 'row',
-    gap: spacing.md,
+    gap: spacing.sm,
   },
   card: {
     flex: 1,
     borderRadius: radii.md,
     padding: spacing.md,
-    gap: spacing.sm,
-    borderWidth: 2,
+    gap: spacing.xs,
+    borderWidth: 1,
+    ...shadows.card,
   },
   collectCard: {
     backgroundColor: colors.primarySoft,
@@ -188,7 +189,8 @@ const styles = StyleSheet.create({
     gap: spacing.xs,
   },
   cardLabel: {
-    ...typography.bodyBold,
+    ...typography.caption,
+    fontWeight: '700',
     color: colors.text,
     flexShrink: 1,
   },
@@ -207,11 +209,11 @@ const styles = StyleSheet.create({
     gap: spacing.sm,
     backgroundColor: colors.surface,
     borderRadius: radii.md,
-    borderWidth: 2,
-    borderColor: colors.border,
+    borderWidth: 1,
+    borderColor: colors.hairline,
     paddingHorizontal: spacing.md,
-    paddingVertical: spacing.md,
-    minHeight: 72,
+    paddingVertical: spacing.sm,
+    minHeight: 56,
   },
   todayLabel: {
     ...typography.bodyBold,
@@ -228,23 +230,6 @@ const styles = StyleSheet.create({
   debtorsLabel: {
     ...typography.bodyBold,
     color: colors.text,
-  },
-  debtorRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: spacing.md,
-    minHeight: 72,
-    backgroundColor: colors.card,
-    borderWidth: 2,
-    borderColor: colors.border,
-    borderRadius: radii.md,
-    paddingHorizontal: spacing.md,
-    paddingVertical: spacing.sm,
-  },
-  debtorName: {
-    ...typography.bodyBold,
-    color: colors.text,
-    flex: 1,
   },
   debtorAmount: {
     ...typography.heading,

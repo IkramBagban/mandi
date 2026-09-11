@@ -15,10 +15,10 @@ interface CalcCardProps {
 }
 
 /**
- * The live bill: total → minus expenses → net payable in huge green numerals.
- * Same `SaleCalc` object that `saveSaleWithKhata` persists, so what the
- * trader sees is what gets saved. Labels come from i18n (props, no hooks —
- * keeps this card reusable in the confirm sheet too).
+ * The live bill: total → minus expenses → net payable in large green
+ * numerals. Same `SaleCalc` object that `saveSaleWithKhata` persists, so
+ * what the trader sees is what gets saved. Labels come from i18n (props, no
+ * hooks — keeps this card reusable in the confirm sheet too).
  */
 export function CalcCard({ calc, language, totalLabel, expensesLabel, netLabel }: CalcCardProps) {
   return (
@@ -46,8 +46,8 @@ const styles = StyleSheet.create({
   card: {
     backgroundColor: colors.surface,
     borderRadius: radii.md,
-    borderWidth: 2,
-    borderColor: colors.border,
+    borderWidth: 1,
+    borderColor: colors.hairline,
     padding: spacing.md,
     gap: spacing.sm,
   },
@@ -69,18 +69,18 @@ const styles = StyleSheet.create({
     color: colors.debit,
   },
   divider: {
-    height: 2,
-    backgroundColor: colors.border,
+    height: 1,
+    backgroundColor: colors.hairline,
   },
   netRow: {
-    gap: spacing.xs,
+    gap: 2,
   },
   netLabel: {
     ...typography.bodyBold,
     color: colors.primaryDark,
   },
   netValue: {
-    ...typography.display,
+    ...typography.amount,
     color: colors.primary,
   },
 });

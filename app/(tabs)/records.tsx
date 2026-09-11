@@ -4,7 +4,7 @@ import { router, useFocusEffect } from 'expo-router';
 import { ActivityIndicator, Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
 import { MaterialIcons } from '@expo/vector-icons';
 
-import { BigButton, EmptyState, PersonAvatar, Screen } from '@/components';
+import { BigButton, EmptyState, ListRow, PersonAvatar, Screen } from '@/components';
 import type { Person } from '@/features/people/types';
 import { commodityLabel } from '@/features/records/commodities';
 import { shiftDateKey, todayKey } from '@/features/khata/types';
@@ -101,7 +101,7 @@ export default function RecordsScreen() {
           testID="records-day-prev"
           style={({ pressed }) => [styles.stepBtn, pressed && styles.pressed]}
         >
-          <MaterialIcons name="chevron-left" size={36} color={colors.primary} />
+          <MaterialIcons name="chevron-left" size={24} color={colors.primary} />
         </Pressable>
         <Text style={styles.dateLabel}>{dateLabel}</Text>
         <Pressable
@@ -111,12 +111,12 @@ export default function RecordsScreen() {
           testID="records-day-next"
           style={({ pressed }) => [styles.stepBtn, pressed && styles.pressed]}
         >
-          <MaterialIcons name="chevron-right" size={36} color={colors.primary} />
+          <MaterialIcons name="chevron-right" size={24} color={colors.primary} />
         </Pressable>
       </View>
 
       <View style={styles.searchRow}>
-        <MaterialIcons name="search" size={28} color={colors.textMuted} />
+        <MaterialIcons name="search" size={20} color={colors.textMuted} />
         <TextInput
           value={query}
           onChangeText={setQuery}
@@ -154,22 +154,22 @@ export default function RecordsScreen() {
               </View>
               {visible.map((sale) => {
                 const person = sale.person_id ? people.get(sale.person_id) : undefined;
+                const sub = `${commodityLabel(t, sale.commodity)}${sale.variety ? ` ${sale.variety}` : ''} · ${formatKg(sale.qty_kg, language)}`;
                 return (
-                  <View key={sale.id} style={styles.row} testID={`records-row-${sale.id}`}>
-                    <PersonAvatar
-                      name={person?.name ?? '?'}
-                      photoUrl={person?.photo_url}
-                      size={56}
-                    />
-                    <View style={styles.rowText}>
-                      <Text style={styles.rowName}>{person?.name ?? '?'}</Text>
-                      <Text style={styles.rowSub}>
-                        {commodityLabel(t, sale.commodity)}
-                        {sale.variety ? ` ${sale.variety}` : ''} · {formatKg(sale.qty_kg, language)}
-                      </Text>
-                    </View>
-                    <Text style={styles.rowNet}>{formatINR(sale.net, language)}</Text>
-                  </View>
+                  <ListRow
+                    key={sale.id}
+                    avatar={
+                      <PersonAvatar
+                        name={person?.name ?? '?'}
+                        photoUrl={person?.photo_url}
+                        size={40}
+                      />
+                    }
+                    title={person?.name ?? '?'}
+                    subtitle={sub}
+                    right={<Text style={styles.rowNet}>{formatINR(sale.net, language)}</Text>}
+                    testID={`records-row-${sale.id}`}
+                  />
                 );
               })}
             </View>
@@ -196,7 +196,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    borderWidth: 2,
+    borderWidth: 1,
     borderColor: colors.border,
     borderRadius: radii.md,
     backgroundColor: colors.card,
@@ -204,8 +204,8 @@ const styles = StyleSheet.create({
     paddingVertical: spacing.xs,
   },
   stepBtn: {
-    minWidth: 64,
-    minHeight: 56,
+    minWidth: 52,
+    minHeight: 44,
     alignItems: 'center',
     justifyContent: 'center',
   },
@@ -223,11 +223,11 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     gap: spacing.sm,
     minHeight: touchTargets.primary,
-    borderWidth: 2,
+    borderWidth: 1,
     borderColor: colors.border,
     borderRadius: radii.md,
     paddingHorizontal: spacing.md,
-    backgroundColor: colors.card,
+    backgroundColor: colors.surface,
   },
   searchInput: {
     flex: 1,
@@ -255,38 +255,16 @@ const styles = StyleSheet.create({
     backgroundColor: colors.primarySoft,
     borderRadius: radii.md,
     padding: spacing.md,
-    gap: spacing.xs,
+    gap: 2,
   },
   totalLabel: {
-    ...typography.bodyBold,
+    ...typography.caption,
+    fontWeight: '700',
     color: colors.primaryDark,
   },
   totalValue: {
-    ...typography.display,
+    ...typography.amount,
     color: colors.primary,
-  },
-  row: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: spacing.md,
-    minHeight: 72,
-    borderWidth: 2,
-    borderColor: colors.border,
-    borderRadius: radii.md,
-    paddingHorizontal: spacing.md,
-    paddingVertical: spacing.sm,
-    backgroundColor: colors.card,
-  },
-  rowText: {
-    flex: 1,
-  },
-  rowName: {
-    ...typography.bodyBold,
-    color: colors.text,
-  },
-  rowSub: {
-    ...typography.caption,
-    color: colors.textMuted,
   },
   rowNet: {
     ...typography.heading,
