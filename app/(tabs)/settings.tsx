@@ -73,7 +73,7 @@ export default function SettingsScreen() {
             >
               <MaterialIcons
                 name={isRtlLanguage(code) ? 'format-textdirection-r-to-l' : 'language'}
-                size={28}
+                size={22}
                 color={selected ? colors.primaryDark : colors.textMuted}
               />
               <Text style={[styles.rowLabel, selected && styles.rowLabelSelected]}>
@@ -81,7 +81,7 @@ export default function SettingsScreen() {
               </Text>
               <MaterialIcons
                 name={selected ? 'radio-button-checked' : 'radio-button-unchecked'}
-                size={28}
+                size={22}
                 color={selected ? colors.primary : colors.disabled}
               />
             </Pressable>
@@ -132,7 +132,7 @@ export default function SettingsScreen() {
 
 const styles = StyleSheet.create({
   header: {
-    paddingVertical: spacing.md,
+    paddingVertical: spacing.sm,
   },
   title: {
     ...typography.title,

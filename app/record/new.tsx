@@ -186,7 +186,7 @@ export default function NewSaleScreen() {
         testID="sale-back"
         style={({ pressed }) => [styles.back, pressed && styles.pressed]}
       >
-        <MaterialIcons name="arrow-back" size={28} color={colors.primary} />
+        <MaterialIcons name="arrow-back" size={22} color={colors.primary} />
         <Text style={styles.backText}>{t('common.back')}</Text>
       </Pressable>
 
@@ -207,7 +207,7 @@ export default function NewSaleScreen() {
             testID="sale-day-prev"
             style={({ pressed }) => [styles.stepBtn, pressed && styles.pressed]}
           >
-            <MaterialIcons name="chevron-left" size={36} color={colors.primary} />
+            <MaterialIcons name="chevron-left" size={24} color={colors.primary} />
           </Pressable>
           <Text style={styles.dateLabel}>{dateLabel}</Text>
           <Pressable
@@ -217,7 +217,7 @@ export default function NewSaleScreen() {
             testID="sale-day-next"
             style={({ pressed }) => [styles.stepBtn, pressed && styles.pressed]}
           >
-            <MaterialIcons name="chevron-right" size={36} color={colors.primary} />
+            <MaterialIcons name="chevron-right" size={24} color={colors.primary} />
           </Pressable>
         </View>
       </View>
@@ -388,7 +388,7 @@ const styles = StyleSheet.create({
     opacity: 0.7,
   },
   header: {
-    gap: spacing.xs,
+    gap: 2,
   },
   title: {
     ...typography.title,
@@ -409,7 +409,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    borderWidth: 2,
+    borderWidth: 1,
     borderColor: colors.border,
     borderRadius: radii.md,
     backgroundColor: colors.card,
@@ -417,8 +417,8 @@ const styles = StyleSheet.create({
     paddingVertical: spacing.xs,
   },
   stepBtn: {
-    minWidth: 64,
-    minHeight: 56,
+    minWidth: 52,
+    minHeight: 44,
     alignItems: 'center',
     justifyContent: 'center',
   },
@@ -443,8 +443,8 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   photo: {
-    width: 120,
-    height: 120,
+    width: 96,
+    height: 96,
     borderRadius: radii.md,
     backgroundColor: colors.surface,
   },

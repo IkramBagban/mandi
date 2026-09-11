@@ -129,7 +129,7 @@ export default function KhataScreen() {
       ) : peopleError ? (
         <View style={styles.center}>
           <View style={styles.errorCircle}>
-            <MaterialIcons name="signal-wifi-off" size={48} color={colors.primary} />
+            <MaterialIcons name="signal-wifi-off" size={36} color={colors.primary} />
           </View>
           <Text style={styles.errorTitle}>{t(peopleError)}</Text>
           <BigButton label={t('common.retry')} icon="refresh" onPress={() => void loadPeople()} />
@@ -174,8 +174,8 @@ export default function KhataScreen() {
 
 const styles = StyleSheet.create({
   header: {
-    gap: spacing.xs,
-    paddingVertical: spacing.md,
+    gap: 2,
+    paddingVertical: spacing.sm,
   },
   title: {
     ...typography.title,
@@ -200,9 +200,9 @@ const styles = StyleSheet.create({
     color: colors.textMuted,
   },
   errorCircle: {
-    width: 96,
-    height: 96,
-    borderRadius: 48,
+    width: 72,
+    height: 72,
+    borderRadius: 36,
     backgroundColor: colors.primarySoft,
     alignItems: 'center',
     justifyContent: 'center',

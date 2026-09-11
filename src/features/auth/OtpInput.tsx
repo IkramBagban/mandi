@@ -22,11 +22,12 @@ function onlyDigits(raw: string): string {
 }
 
 /**
- * 6 huge boxes, one invisible input behind them.
+ * 6 compact boxes, one invisible input behind them.
  *
  * A single `TextInput` owns the keyboard so typing auto-advances, backspace
  * steps back, and long-press paste fills every box — no ref-juggling across
  * six inputs (fragile on low-end Android). Tapping any box focuses it.
+ * Digits stay large (24sp) — this is a read-the-code surface.
  */
 export function OtpInput({ value, onChange, onComplete, error, testID }: OtpInputProps) {
   const { t } = useTranslation();
@@ -95,11 +96,11 @@ const styles = StyleSheet.create({
   },
   box: {
     flex: 1,
-    aspectRatio: 0.82,
-    minHeight: 64,
+    aspectRatio: 0.9,
+    minHeight: 56,
     alignItems: 'center',
     justifyContent: 'center',
-    borderWidth: 2,
+    borderWidth: 1,
     borderColor: colors.border,
     borderRadius: radii.md,
     backgroundColor: colors.card,
@@ -115,7 +116,7 @@ const styles = StyleSheet.create({
     borderColor: colors.danger,
   },
   digit: {
-    ...typography.display,
+    ...typography.amount,
     color: colors.text,
     fontVariant: ['tabular-nums'],
   },

@@ -8,13 +8,12 @@ import { colors } from '@/theme';
 function TabIcon({
   name,
   color,
-  size,
 }: {
   name: keyof typeof MaterialIcons.glyphMap;
   color: ColorValue;
-  size: number;
+  size?: number;
 }) {
-  return <MaterialIcons name={name} size={size} color={color as string} />;
+  return <MaterialIcons name={name} size={22} color={color as string} />;
 }
 
 /**
@@ -29,8 +28,8 @@ export default function TabsLayout() {
         headerShown: false,
         tabBarActiveTintColor: colors.primary,
         tabBarInactiveTintColor: colors.textMuted,
-        tabBarStyle: { minHeight: 68, paddingBottom: 10, paddingTop: 6 },
-        tabBarLabelStyle: { fontSize: 13, fontWeight: '700' },
+        tabBarStyle: { minHeight: 56, paddingBottom: 6, paddingTop: 4 },
+        tabBarLabelStyle: { fontSize: 12, fontWeight: '700' },
         tabBarIconStyle: { marginBottom: 0 },
       }}
     >

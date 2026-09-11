@@ -93,8 +93,8 @@ export default function SetPasswordScreen() {
 
 const styles = StyleSheet.create({
   header: {
-    gap: spacing.xs,
-    paddingVertical: spacing.md,
+    gap: 2,
+    paddingVertical: spacing.sm,
   },
   title: {
     ...typography.title,

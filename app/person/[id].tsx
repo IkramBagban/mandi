@@ -19,7 +19,7 @@ import type { KhataEntry } from '@/features/khata/types';
 import { deletePerson, getPerson } from '@/features/people/repository';
 import type { Person } from '@/features/people/types';
 import { mapDbErrorToKey } from '@/lib/dbErrors';
-import { colors, radii, spacing, touchTargets, typography } from '@/theme';
+import { colors, radii, shadows, spacing, touchTargets, typography } from '@/theme';
 
 function toErrorKey(error: unknown): LedgerErrorKey {
   return mapDbErrorToKey(error);
@@ -167,7 +167,7 @@ export default function PersonDetailScreen() {
       <Screen>
         <View style={styles.center}>
           <View style={styles.errorCircle}>
-            <MaterialIcons name="signal-wifi-off" size={48} color={colors.primary} />
+            <MaterialIcons name="signal-wifi-off" size={36} color={colors.primary} />
           </View>
           <Text style={styles.errorTitle}>{t(errorKey ?? 'errors.failed')}</Text>
           <BigButton label={t('common.retry')} icon="refresh" onPress={() => void load()} />
@@ -181,7 +181,7 @@ export default function PersonDetailScreen() {
   return (
     <Screen>
       <View style={styles.profile}>
-        <PersonAvatar name={person.name} photoUrl={person.photo_url} size={104} />
+        <PersonAvatar name={person.name} photoUrl={person.photo_url} size={88} />
         <Text style={styles.name}>{person.name}</Text>
         {meta ? <Text style={styles.meta}>{meta}</Text> : null}
         {person.phone ? <Text style={styles.phone}>{person.phone}</Text> : null}
@@ -244,9 +244,9 @@ const styles = StyleSheet.create({
     color: colors.textMuted,
   },
   errorCircle: {
-    width: 96,
-    height: 96,
-    borderRadius: 48,
+    width: 72,
+    height: 72,
+    borderRadius: 36,
     backgroundColor: colors.primarySoft,
     alignItems: 'center',
     justifyContent: 'center',
@@ -259,11 +259,12 @@ const styles = StyleSheet.create({
   profile: {
     alignItems: 'center',
     gap: spacing.xs,
-    padding: spacing.lg,
-    borderRadius: radii.lg,
-    borderWidth: 2,
-    borderColor: colors.border,
+    padding: spacing.md,
+    borderRadius: radii.md,
+    borderWidth: 1,
+    borderColor: colors.hairline,
     backgroundColor: colors.card,
+    ...shadows.card,
   },
   name: {
     ...typography.title,
